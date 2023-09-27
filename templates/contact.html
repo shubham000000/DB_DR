@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<head>
+    <title>Contact Us</title>
+</head>
+<body>
+    <h1>About Us</h1>
+    <div class="card mb-3" style=
+            "max-width: 1000px;
+            border-radius: 20px;
+            margin: auto;
+            margin-top: 20px;
+            background-color: #FEFBFB;
+            box-shadow: 5px 5px 5px #aaaaaa;">
+        <div class="row no-gutters">
+            <div class="col-md-3">
+                <img src= "/static/PIC/Retimark_Vision.jpeg"  class="card-img" alt="Retimark_Vision" 
+                style="border-radius: 5%; width: 250px; height: 250px;">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title" style="font-size: xx-large; margin-top: 20px;">Retimark</h5>
+                    <p class="card-text" style="font-size: large; margin-top: 20px;">is a company that discovers protein markers through proteomics-based platform technology and provides rapid and highly-accurate diagnostic service for blind ocular disease by developing blood-based analysis algorithm S/W using multiple reaction methods and artificial intelligence. </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h1>Contact Us</h1>
+    <div class="contact">
+        <div class="text">
+            <div class="info">
+                <img src="/static/PIC/pin.png" class="png">
+                <p class="name">Address: &ensp;</p>
+                <p style="display: inline; font-size: large;">South Korea: #1707, 17 Seobinggo-ro, Yongsan-gu, Seoul 04387, South Korea</p>
+            </div>
+            <p style="display: flex; margin-left: 170px; font-size: large; margin-bottom: 20px;">Singapore: 9 Straits View #05-07 Marina One West Tower Singapore 018937</p>
+            <div class="info">
+                <img src="/static/PIC/phone-call.png" class="png">
+                <p class="name">Tel: &ensp;</p>
+                <p style="margin-left: 45px; font-size: large;">+82-2-959-0725</p>
+            </div>
+            <div class="info">
+                <img src="/static/PIC/mail.png" class="png">
+                <p class="name">Email: &ensp;</p>
+                <p style="margin-left: 25px; font-size: large;">retimark@retimark.com</p>
+            </div>
+        </div>
+    </div>
+</body>
+<style>
+    h1 {
+        text-align: center;
+        margin-top: 40px;
+        font-size: xx-large;
+    }
+    .contact{
+        display: center; 
+        width: 1000px;
+        background-color:  #FEFBFB;
+        box-shadow: 5px 5px 5px #aaaaaa;
+        margin-top: 20px;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 20px;
+    }
+    .info {
+        margin-left: 30px;
+        display: flex; 
+    }
+    .name {
+        display: inline;
+        font-size: large;
+        font-weight: bold;
+    }
+    .png {
+        width: 30px;
+        height: 30px;
+        margin-right: 20px;
+    }
+    .text {
+        padding-top: 20px;
+        margin-top: 20px;
+    }
+
+</style>
+{% endblock %}

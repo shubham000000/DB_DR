@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+<head></head>
+<body>
+    <div class="card mb-3" style="max-width: 60%; max-height: 500px; margin: auto;">
+      <img src="/static/PIC/report.png" class="card-img-top" alt="..."
+          style="width: 300px; height: 182px; margin: auto;">
+          <h1> Past Reports </h1>
+    </div>
+    
+    <div class="accordion" id="accordionExample">
+      {% for report in past_reports %}
+        <div class="card">
+          <form action={{ url_for('report_detail_page') }} method="POST">
+          <div class="card-header" id="heading{{i}}">
+            <h2 class="mb-0"> 
+              <button class="btn btn-link btn-block text-left" data-toggle="collapse" data-target="#{{i}}" aria-expanded="true" aria-controls="{{i}}" style="color: #ee6617">
+                Report on {{report.diagnosis_time}}
+              </button>
+            </h2>
+          </div>
+          <div id="{{i}}" class="collapse show" aria-labelledby="heading{{i}}" data-parent="#accordionExample" style="overflow-y: scroll; height: 400px;">
+            <div class="card-body">
+              <p class="title">Report</p>
+              <p class="risk-score">Your risk score is {{ report.risk_score }}</p>
+              <!--Basic Info Secton-->
+              <p class="Subheader">Basic Information</p>
+              <div class="report-detail" style="display: flex; align-items: center; justify-content: center;">
+                <ul class="list-name">
+                  <li class="list-item">Age (year): </li>
+                  <li class="list-item">Height (cm): </li>
+                  <li class="list-item">Weight (kg): </li>
+                  <li class="list-item">Waist Circumference (cm): </li>
+                  <li class="list-item">Body Mass Index (kg/m2): </li> 
+                </ul>
+                <ul class="list-value">
+                  <li class="list-item">{{ report.age }}</li>
+                  <li class="list-item">{{ report.HE_ht }}</li>
+                  <li class="list-item">{{ report.HE_wt }}</li>
+                  <li class="list-item">{{ report.HE_wc }}</li>
+                  <li class="list-item">{{ report.HE_BMI }}</li>
+                </ul>
+              </div>
+              <!--Blood test Section-->
+              <p class="Subheader">Blood Test</p>
+              <div class="report-detail" style="display: flex; align-items: center; justify-content: center;">
+                <ul class="list-name">
+                  <li class="list-item">Systolic Blood Pressure (mmHg):</li>
+                  <li class="list-item">Diastolic Blood Pressure (mmHg):</li>
+                  <li class="list-item">Total Cholesterol (mg/dL):</li>
+                  <li class="list-item">HDL Cholesterol (mg/dL):</li>
+                  <li class="list-item">Triglycerides (mg/dL):</li>
+                  <li class="list-item">Fasting Blood Sugar (mg/dl):</li>
+                  <li class="list-item">Hemoglobin_A1c (%):</li>
+                  <li class="list-item">Blood Urea Nitrogen (mg/dL):</li>
+                  <li class="list-item">Blood Serum Creatinine (mg/dL):</li>
+                </ul>
+                <ul class="list-value">
+                  <li class="list-item">{{ report.HE_sbp }}</li>
+                  <li class="list-item">{{ report.HE_dbp }}</li>
+                  <li class="list-item">{{ report.HE_chol }}</li>
+                  <li class="list-item">{{ report.HE_HDL_st2 }}</li>
+                  <li class="list-item">{{ report.HE_TG }}</li>
+                  <li class="list-item">{{ report.HE_glu }}</li>
+                  <li class="list-item">{{ report.HE_HbA1c }}</li>
+                  <li class="list-item">{{ report.HE_BUN }}</li>
+                  <li class="list-item">{{ report.HE_crea }}</li>
+                </ul>
+              </div>
+              <!--Lifestyle Section-->
+              <p class="Subheader">Lifestyle Records</p>
+              <div class="report-detail" style="display: flex; align-items: center; justify-content: center;">
+                <ul class="list-name">
+                  <li class="list-item">Do you drink more than once a month?</li>
+                  <li class="list-item">Do you have high risk drinking?</li>
+                  <li class="list-item">Do you smoke now?</li>               
+                  <li class="list-item">Duration of Vigorous Activity During a Week (min):</li>
+                  <li class="list-item">Duration of Moderate Activity During a Week (min):</li>
+                  <li class="list-item">Duration of Walking During a Week (min):</li>
+                  <li class="list-item">Do you do aerobic activity?</li>
+                
+                </ul>
+                <ul class="list-value">
+                  <li class="list-item">{{ report.dr_month }}</li>
+                  <li class="list-item">{{ report.dr_high }}</li>
+                  <li class="list-item">{{ report.sm_presnt }}</li>
+                  <li class="list-item">{{ report.pa_vig_tm }}</li>
+                  <li class="list-item">{{ report.pa_mod_tm }}</li>
+                  <li class="list-item">{{ report.pa_walk }}</li>
+                  <li class="list-item">{{ report.pa_aerobic }}</li>
+                
+                </ul>
+              </div>
+              <!--Historical disease Section-->
+              <p class="Subheader">Historical Diseases</p>
+              <div class="report-detail" style="display: flex; align-items: center; justify-content: center;">
+                <ul class="list-name">
+                  <li class="list-item">Do you have diabetes treatment?</li>
+                  <li class="list-item">Diabetes Treatment with Insulin Injection:</li>
+                  <li class="list-item">Diabetes Treatment with Oral Medication:</li>
+                  <li class="list-item">Do you have diabetes family history?</li>
+                
+                  
+                </ul>
+                <ul class="list-value">
+                  <li class="list-item">{{ report.DE1_3 }}</li>
+                  <li class="list-item">{{ report.DE1_31 }}</li>
+                  <li class="list-item">{{ report.DE1_32 }}</li>
+                  <li class="list-item">{{ report.HE_DMfh }}</li>
+               
+                  
+                </ul>
+              </div>
+              <input type="text" class="form-control" id="inputReportTime" name="report_time" value="{{ report.diagnosis_time }}" style="display: none;" required >
+              <div class="view-Report">
+                <button type="submit" class="btn btn-warning" role="button" style="margin-bottom: 10px" >View full report</button>
+                <!--<a class="btn btn-outline-warning" type="button" href="{{ url_for('report_detail_page') }}" style=" margin-bottom: 10px;">View full report</a>-->
+              </div>
+              </div>
+          </div>
+          </form>  
+        </div> 
+      {% endfor %}
+    </div>
+    
+    
+
+    <style>
+        h1 {
+            font-size: xx-large;
+            text-align: center;
+        }
+        .accordion {
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 50px;
+            margin-top: 10px;
+        }
+        .title {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: 150%;
+        }
+        .list-name {
+            margin-right: 20px;
+        }
+        .list-item {
+            list-style-type: none;
+        }
+        .risk-score {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .Subheader {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 20px;
+            text-decoration: underline;
+        }
+        .inline { 
+            display: inline-flex;
+            margin-bottom: 10px;
+        }
+        .report-detail {
+          margin-left: 30px;
+        }
+        .view-Report {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+    </style>
+</body>
+{% endblock %}

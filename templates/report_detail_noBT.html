@@ -1,0 +1,1071 @@
+{% extends 'base.html' %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+      }
+      .chartCard {
+        margin-top: 20px;
+        width: 100vw;
+        /*height: calc(100vh - 40px);*/
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .chartBox {
+        width: 80%;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 5px 5px 5px #aaaaaa;
+        border-radius: 5px;
+        background: white;
+        overflow-y: scroll;
+        height: 600px;
+      }
+      .diabetes-risk {
+        text-align: center;
+        font-size: 150%;
+        font-weight: bold;
+      }
+      .indivChart {
+        height: 100px;
+      }
+      .textBox {
+        width: 80%;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 5px 5px 5px #aaaaaa;
+        border-radius: 5px;
+        background: antiquewhite;
+        /*margin-bottom: auto;*/
+      }
+      .center {
+        display: flex;
+        font-weight: bold;
+        align-items: center;
+        justify-content: center;
+      }
+      .inline {
+        display: flex; 
+        margin-left: 30px;
+      }
+      #explenation {
+        font-size: 12px;
+        margin-left: 100px;
+        margin-bottom: 5px;
+        padding-left: 80px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card mb-3" style="width: 80%; max-height: 500px; margin: auto;">
+      <img src="/static/PIC/report.png" class="card-img-top" alt="..."
+          style="width: 300px; height: 182px; margin-bottom: 10px; margin-left: auto; margin-right: auto; margin-top: 10px;">
+        <div class="diabetes-risk">
+                  <p>Your risk score is {{ report.risk_score }}</p>
+              </div>
+          <div class="center">
+            <div id="risk-score">
+              <p>If your glucose level is between 0th to 50th percentile, Your risk score will be {{ report.risk_score_glucose_50 }}</p>
+              <p>If your glucose level is between 50th to 75th percentile, Your risk score will be {{ report.risk_score_glucose_75 }}</p>
+              <p>If your glucose level is between 75th to 100th percentile, Your risk score will be {{ report.risk_score_glucose_100 }}</p>
+            </div>
+          </div>
+    </div>
+    <div class="chartCard">
+        <div class="textBox">
+          <p>* How to interpret the bar chart below:</p>
+          <p>The features below are ranked by feature importance</p>
+          <p>Look for the color of the bar!</p>
+          <p>If the bar is red, it means your value has exceeded the diabetic average; If the bar is green, it means your value is kept to normal.</p>
+        </div>
+    </div>
+    <div class="chartCard">
+      <div class="chartBox">
+        <div class="indivChart">
+          <canvas id="myChart1"></canvas>   
+        </div>
+        <p id="explenation">*0 for no, 1 for yes</p>
+        <div class="indivChart">
+          <canvas id="myChart2"></canvas>   
+        </div>
+        <div class="indivChart">
+          <canvas id="myChart3"></canvas>   
+        </div>
+        <div class="indivChart">
+          <canvas id="myChart4"></canvas>   
+        </div>
+        <p id="explenation">*0 for no, 1 for yes</p>
+        <div class="indivChart">
+          <canvas id="myChart5"></canvas>   
+        </div>
+        <p id="explenation">*0 for no, 1 for yes</p>
+        <div class="indivChart">
+          <canvas id="myChart6"></canvas>   
+        </div>
+        <p id="explenation">*0 for no, 1 for yes</p>
+        <div class="indivChart">
+          <canvas id="myChart7"></canvas>   
+        </div>
+        <p id="explenation">*0 for no, 1 for yes</p>
+        <div class="indivChart">
+          <canvas id="myChart8"></canvas>   
+        </div>
+        <p id="explenation">*1 for underweight, 2 for normal, 3 for obesity</p>
+        <div class="indivChart">
+          <canvas id="myChart9"></canvas>   
+        </div>
+        <p id="explenation">*0 for no, 1 for yes</p>
+        <div class="indivChart">
+          <canvas id="myChart10"></canvas>   
+        </div>
+      </div>
+    </div>
+<!--
+  
+  
+  deleted code for advise and appointment
+
+
+-->
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js" integrity="sha512-Tfw6etYMUhL4RTki37niav99C6OHwMDB2iBT5S5piyHO+ltK2YX8Hjy9TXxhE1Gm/TmAV0uaykSpnHKFIAif/A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+      
+      /*23 independent variables arranged in descending order of feature importance:
+      ['HE_HbA1c', hemoglobin_A1c (%)
+      'HE_DMfh', diabetes family history
+      'HE_wc', waist circumference (cm)
+      'HE_TG', triglycerides (mg/dL)
+      'HE_HP', hypertension status (by test)
+      'N_FAT', daily intake of fat (g)
+      'pa_totMET', total MET-min/week
+      'HE_HDL_st2', HDL cholesterol (mg/dL)
+      'HE_HTG', hyper triglycerides status
+      'HE_dbp', diastolic_blood_pressure (mmHg)
+      'DI3_dg', stroke diagnosis
+      'N_PROT', daily intake of protein (g)
+      'HE_sbp', systolic_blood_pressure (mmHg)
+      'N_CHO', daily intake of carbohydrate (g)
+      'DI4_dg', myocardial infarction or angina diagnosis status
+      'HE_BUN', blood urea nitrogen (mg/dL)
+      'sm_presnt', current smoking status
+      'HE_crea', blood serum creatinine (mg/dL)
+      'HE_obe', obesity status
+      'HE_HCHOL', hyperlipidemia status
+      'sex', 
+      'HE_BMI', body mass index (kg/m2)
+      'age']
+    */
+    // setup block
+    const HE_DMfh = '{{ report.HE_DMfh }}';
+    const HE_wc = '{{ report.HE_wc }}';
+    const pa_totMET = '{{ report.pa_totMET }}';
+    const HE_HTG = '{{ report.HE_HTG }}';
+    const DI3_dg = '{{ report.DI3_dg }}';
+    const DI4_dg = '{{ report.DI4_dg }}';
+    const sm_presnt = '{{ report.sm_presnt }}';
+    const HE_obe = '{{ report.HE_obe }}';
+    const HE_HCHOL = '{{ report.HE_HCHOL }}';
+    const HE_BMI = '{{ report.HE_BMI }}';
+
+    const HE_DMfh_diabetic = 0;
+    const HE_wc_diabetic = 87.8986268174475;
+    const pa_totMET_diabetic = 1533.4665589660744;
+    const HE_HTG_diabetic = 0;
+    const DI3_dg_diabetic = 0;
+    const DI4_dg_diabetic = 0;
+    const sm_presnt_diabetic = 0;
+    const HE_obe_diabetic = 4;
+    const HE_HCHOL_diabetic = 0;
+    const HE_BMI_diabetic = 25.21610630227172;
+
+    const HE_DMfh_normal  = 0;
+    const HE_wc_normal  = 82.05558534405719;
+    const pa_totMET_normal  = 1729.2093535895146;
+    const HE_HTG_normal  = 0;
+    const DI3_dg_normal  = 0;
+    const DI4_dg_normal  = 0;
+    const sm_presnt_normal  = 0;
+    const HE_obe_normal = 2;
+    const HE_HCHOL_normal = 0;
+    const HE_BMI_normal = 23.879052007717448;
+
+    const featureValue = [HE_DMfh, HE_wc, pa_totMET, HE_HTG, DI3_dg, DI4_dg, sm_presnt, HE_obe, HE_HCHOL, HE_BMI]
+    const diabeticValue = [HE_DMfh_diabetic, HE_wc_diabetic, pa_totMET_diabetic, HE_HTG_diabetic, 
+                          DI3_dg_diabetic, DI4_dg_diabetic, sm_presnt_diabetic, HE_obe_diabetic, HE_HCHOL_diabetic, HE_BMI_diabetic]
+    const normalValue = [HE_DMfh_normal, HE_wc_normal, pa_totMET_normal, HE_HTG_normal, DI3_dg_normal, DI4_dg_normal, 
+                        sm_presnt_normal, HE_obe_normal, HE_HCHOL_normal, HE_BMI_normal]
+    const featureName = ["     Diabetes family history", " Waist circumference (cm)", 
+                         "       Total MET (min/week)", "Hyper triglycerides status", "               Stroke diagnosis", 
+                         "    Cardiovascular disease", "    Current smoking status", "                  Obesity status",
+                        "      Hyperlipidemia status", "Body mass index (kg/m2)"]
+  
+    secondLayer = []
+    const firstLayerBackground =[];
+    const firstLayerBorder = [];
+    const secondLayerBackground =[];
+    const secondLayerBorder = [];
+    for (i=0; i<featureValue.length; i++) {
+      /*for features that diabetic level < normal level*/
+      if (i == 3) {
+        if (featureValue[i]<diabeticValue[i] && featureValue[i]<normalValue[i]) {
+          secondLayer.push(normalValue[i]-featureValue[i]);
+          firstLayerBackground.push('rgba(255, 99, 132, 0.2)')
+          firstLayerBorder.push('rgb(255, 99, 132)')
+          secondLayerBackground.push('rgba(201, 203, 207, 0.2)')
+          secondLayerBorder.push('rgb(201, 203, 207)')
+        }
+        else if (featureValue[i]>diabeticValue[i] && featureValue[i]<normalValue[i]) {
+          secondLayer.push(normalValue[i]-featureValue[i]);
+          firstLayerBackground.push('rgba(75, 192, 192, 0.2)')
+          firstLayerBorder.push('rgb(75, 192, 192)')
+          secondLayerBackground.push('rgba(201, 203, 207, 0.2)')
+          secondLayerBorder.push('rgb(201, 203, 207)')
+        }
+        else {
+          secondLayer.push(0);
+          firstLayerBackground.push('rgba(75, 192, 192, 0.2)')
+          firstLayerBorder.push('rgb(75, 192, 192)')
+          secondLayerBackground.push('rgba(75, 192, 192, 0.2)')
+          secondLayerBorder.push('rgb(75, 192, 192)')
+        }
+      }
+      /*for features that diabetic level > normal level*/
+      else {
+        if(featureValue[i]>diabeticValue[i] && featureValue[i]>normalValue[i]) {
+          secondLayer.push(0);
+          firstLayerBackground.push('rgba(255, 99, 132, 0.2)')
+          firstLayerBorder.push('rgb(255, 99, 132)')
+          secondLayerBackground.push('rgba(255, 99, 132, 0.2)')
+          secondLayerBorder.push('rgb(255, 99, 132)')
+      } else {
+          secondLayer.push(diabeticValue[i]-featureValue[i]);
+          firstLayerBackground.push('rgba(75, 192, 192, 0.2)')
+          firstLayerBorder.push('rgb(75, 192, 192)')
+          secondLayerBackground.push('rgba(201, 203, 207, 0.2)')
+          secondLayerBorder.push('rgb(201, 203, 207)')
+      }
+      }
+      
+    }
+    
+    // first variable
+    const data1 = {
+      labels: [featureName[0]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[0]],
+        backgroundColor: firstLayerBackground[0],
+        borderColor: firstLayerBorder[0],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[0]],
+        backgroundColor: secondLayerBackground[0],
+        borderColor: secondLayerBorder[0],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    //second variable
+    const data2 = {
+      labels: [featureName[1]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[1]],
+        backgroundColor: firstLayerBackground[1],
+        borderColor: firstLayerBorder[1],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[1]],
+        backgroundColor: secondLayerBackground[1],
+        borderColor: secondLayerBorder[1],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    //third variable
+    const data3 = {
+      labels: [featureName[2]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[2]],
+        backgroundColor: firstLayerBackground[2],
+        borderColor: firstLayerBorder[2],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[2]],
+        backgroundColor: secondLayerBackground[2],
+        borderColor: secondLayerBorder[2],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    //fourth variable
+    const data4 = {
+      labels: [featureName[3]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[3]],
+        backgroundColor: firstLayerBackground[3],
+        borderColor: firstLayerBorder[3],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[3]],
+        backgroundColor: secondLayerBackground[3],
+        borderColor: secondLayerBorder[3],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    //fifth variable
+    const data5 = {
+      labels: [featureName[4]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[4]],
+        backgroundColor: firstLayerBackground[4],
+        borderColor: firstLayerBorder[4],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[4]],
+        backgroundColor: secondLayerBackground[4],
+        borderColor: secondLayerBorder[4],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    //sixth variable
+    const data6 = {
+      labels: [featureName[5]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[5]],
+        backgroundColor: firstLayerBackground[5],
+        borderColor: firstLayerBorder[5],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[5]],
+        backgroundColor: secondLayerBackground[5],
+        borderColor: secondLayerBorder[5],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    //seventh variable
+    const data7 = {
+      labels: [featureName[6]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[6]],
+        backgroundColor: firstLayerBackground[6],
+        borderColor: firstLayerBorder[6],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[6]],
+        backgroundColor: secondLayerBackground[6],
+        borderColor: secondLayerBorder[6],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    //eighth variable
+    const data8 = {
+      labels: [featureName[7]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[7]],
+        backgroundColor: firstLayerBackground[7],
+        borderColor: firstLayerBorder[7],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[7]],
+        backgroundColor: secondLayerBackground[7],
+        borderColor: secondLayerBorder[7],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    //nineth variable
+    const data9 = {
+      labels: [featureName[8]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[8]],
+        backgroundColor: firstLayerBackground[8],
+        borderColor: firstLayerBorder[8],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[8]],
+        backgroundColor: secondLayerBackground[8],
+        borderColor: secondLayerBorder[8],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    //tenth variable
+    const data10 = {
+      labels: [featureName[9]],
+      datasets: [{
+        label: 'Feature value',
+        data: [featureValue[9]],
+        backgroundColor: firstLayerBackground[9],
+        borderColor: firstLayerBorder[9],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      },
+      {
+        label: 'Exceed value',
+        data: [secondLayer[9]],
+        backgroundColor: secondLayerBackground[9],
+        borderColor: secondLayerBorder[9],
+        borderWidth: 1,
+        barPercentage: 0.6,
+        barThickness: 23
+      }]
+    };
+    
+    
+    
+    //Cut off lines
+    const diabeticLine1 = {
+      id: "diabeticLine1",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[0]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine1 = {
+      id: "normalLine1",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[0]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const diabeticLine2 = {
+      id: "diabeticLine2",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[1]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine2 = {
+      id: "normalLine2",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[1]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const diabeticLine3 = {
+      id: "diabeticLine3",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[2]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine3 = {
+      id: "normalLine3",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[2]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const diabeticLine4 = {
+      id: "diabeticLine4",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[3]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine4 = {
+      id: "normalLine4",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[3]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const diabeticLine5 = {
+      id: "diabeticLine5",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[4]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine5 = {
+      id: "normalLine5",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[4]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const diabeticLine6 = {
+      id: "diabeticLine6",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[5]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine6 = {
+      id: "normalLine6",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[5]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const diabeticLine7 = {
+      id: "diabeticLine7",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[6]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine7 = {
+      id: "normalLine7",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[6]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const diabeticLine8 = {
+      id: "diabeticLine8",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[7]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine8 = {
+      id: "normalLine8",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[7]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const diabeticLine9 = {
+      id: "diabeticLine9",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[8]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine9 = {
+      id: "normalLine9",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[8]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const diabeticLine10 = {
+      id: "diabeticLine10",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.strokeRect(x.getPixelForValue(diabeticValue[9]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    const normalLine10 = {
+      id: "normalLine10",
+      beforeDraw(chart, args, options) {
+        const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+          {x, y} } = chart;
+        ctx.save();
+        ctx.strokeStyle = 'green';
+        ctx.strokeRect(x.getPixelForValue(normalValue[9]), top, 0, bottom);
+        ctx.restore();
+      }
+    };
+    
+    
+    //config block
+    const config1 = {
+      type: 'bar',
+        data: data1,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    ticks: {
+                      stepSize: 5
+                    },
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine1, normalLine1]
+    };
+    const config2 = {
+      type: 'bar',
+        data: data2,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine2, normalLine2]
+    };
+    const config3 = {
+      type: 'bar',
+        data: data3,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine3, normalLine3]
+    };
+    const config4 = {
+      type: 'bar',
+        data: data4,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    ticks: {
+                      stepSize: 5
+                    },
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine4, normalLine4]
+    };
+    const config5 = {
+      type: 'bar',
+        data: data5,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    ticks: {
+                      stepSize: 5
+                    },
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine5, normalLine5]
+    };
+    const config6 = {
+      type: 'bar',
+        data: data6,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    ticks: {
+                      stepSize: 5
+                    },
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine6, normalLine6]
+    };
+    const config7 = {
+      type: 'bar',
+        data: data7,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    ticks: {
+                      stepSize: 5
+                    },
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine7, normalLine7]
+    };
+    const config8 = {
+      type: 'bar',
+        data: data8,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    ticks: {
+                      stepSize: 1
+                    },
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine8, normalLine8]
+    };
+    const config9 = {
+      type: 'bar',
+        data: data9,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    ticks: {
+                      stepSize: 5
+                    },
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine9, normalLine9]
+    };
+    const config10 = {
+      type: 'bar',
+        data: data10,
+        options: {
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: { 
+                    stacked: true,
+                    grid : {
+                      drawOnChartArea: false,
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    grid : {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+        },
+        plugins: [diabeticLine10, normalLine10]
+    };
+    
+    
+    
+    // render init block
+    const myChart1 = new Chart(
+      document.getElementById('myChart1'),
+      config1
+    );
+    const myChart2 = new Chart(
+      document.getElementById('myChart2'),
+      config2
+    );
+    const myChart3 = new Chart(
+      document.getElementById('myChart3'),
+      config3
+    );
+    const myChart4 = new Chart(
+      document.getElementById('myChart4'),
+      config4
+    );
+    const myChart5 = new Chart(
+      document.getElementById('myChart5'),
+      config5
+    );
+    const myChart6 = new Chart(
+      document.getElementById('myChart6'),
+      config6
+    );
+    const myChart7 = new Chart(
+      document.getElementById('myChart7'),
+      config7
+    );
+    const myChart8 = new Chart(
+      document.getElementById('myChart8'),
+      config8
+    );
+    const myChart9 = new Chart(
+      document.getElementById('myChart9'),
+      config9
+    );
+    const myChart10 = new Chart(
+      document.getElementById('myChart10'),
+      config10
+    );
+    
+    </script>
+
+  </body>
+{% endblock %}

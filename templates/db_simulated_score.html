@@ -1,0 +1,630 @@
+{% extends 'base.html' %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js" integrity="sha512-Tfw6etYMUhL4RTki37niav99C6OHwMDB2iBT5S5piyHO+ltK2YX8Hjy9TXxhE1Gm/TmAV0uaykSpnHKFIAif/A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <body>
+
+        <div class="container-xxl px-4 mt-4">
+            <div class="row">
+                <div class="col-lg-9" style="margin: auto">
+                    <div class="graph-container" style="padding-bottom: 5px;">
+                        <div class="graph-title">Your Simulated Risk Score Trend*</div>
+                        <div>
+                            <canvas id="lineChart" style="margin: auto; width:85%; height: 280px;"></canvas>
+                        </div>
+                        <div style="margin-top: 10px; margin-left: 4%; font-size: 11px; font-style: italic; color: grey;">*If you have not done any diagnosis, risk score for diagnosis will be unavailable</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-xxl px-4 mt-4">
+            <div class="graph-container" style="padding-bottom: 5px;">
+                <div class="graph-title" style="padding-top: 5px; padding-bottom: 5px;">Your Risk Factor Change Compared to Most Recent Diagnosis*</div>
+                <div style="margin: auto; width: 50%; display: flex; align-items: center; justify-content: center">
+                    <div>
+                        <canvas id="barChart1" style="max-width: 250px; height: 200px;"></canvas>
+                    </div>
+                    <div>
+                        <canvas id="barChart2" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
+                    </div>
+                    <div>
+                        <canvas id="barChart3" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
+                    </div>
+                    <div>
+                        <canvas id="barChart4" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
+                    </div>
+                    <!-- <div>
+                        <canvas id="barChart5" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
+                    </div> -->
+                </div>
+                <div style="margin-top: 10px; margin-left: 3%; font-size: 11px; font-style: italic; color: grey;">*The orange line and label in the graph represent the average value of a diabetic person. For Hypertension status, 1 means normal, 2 means prehypertension, and 3 means hypertension</div>
+                <div style="margin-left: 3%; font-size: 11px; font-style: italic; color: grey;">*If you have not done any diagnosis, results for diagnosis will be unavailable</div>
+            </div>
+        </div>
+
+        <div style="display: flex; padding-top: 10px;
+                          justify-content: center;
+                          align-items: center; margin-bottom: 20px;">
+            <a class="btn btn-warning" href="{{ url_for('db_simulation_page') }}" style="margin-right: 10px;">Try Another Simulation</a>
+            <a class="btn btn-warning" href="{{ url_for('about_page') }}">Learn More About Diabetes</a>
+        </div>
+
+
+        <script>
+            function replaceWithNull(x) {
+                if (x == 0) {
+                    return null
+                } else {
+                    return x
+                }
+            }
+
+            function replaceWithNotAvailable(x) {
+                if (x == 'NA') {
+                    return "Not Available"
+                } else {
+                    return x
+                }
+            }
+
+            function replaceWithHour(x) {
+                if (x != "NA") {
+                    x = x.slice(0,10)
+                    return x
+                } else {
+                    return
+                }
+            }
+
+            simulated_date = '{{simulated_report.diagnosis_time}}'
+            latest_diagnosis_date = '{{diagnosis_time}}'
+
+            trend_date_labels = ["Last Diagnosis: " + latest_diagnosis_date, "Simulated: " + simulated_date]
+            for (var i = 0; i < trend_date_labels.length; i++ )  {
+                trend_date_labels[i] = replaceWithNotAvailable(trend_date_labels[i])
+            }
+            //console.log(trend_date_labels)
+
+            simulated_risk_score = Number('{{simulated_report.risk_score}}')
+            latest_diagnosis_risk_score = Number('{{latest_report.risk_score}}')
+            //latest_diagnosis_risk_score = Number('26')
+            risk_scores_data = [latest_diagnosis_risk_score, simulated_risk_score]
+            for (var i = 0; i < risk_scores_data.length; i++ )  {
+                risk_scores_data[i] = replaceWithNull(risk_scores_data[i])
+            }
+            //console.log(risk_scores_data)
+            //console.log(latest_risk_score)
+            const data = {
+                labels: trend_date_labels,
+                datasets: [{
+                    label: "risk score",
+                    data: risk_scores_data,
+                    borderWidth: 2,
+                    borderColor: "orange",
+                    backgroundColor: ["rgba(254, 233, 220)","rgba(250, 180, 139)"],
+                    pointHoverRadius: 12,
+                    pointRadius: [5, 10],
+                    datalabels: {
+                        color: "black",
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 2
+                    }
+                }],
+            };
+
+            date_labels = ["Diagnosis", "Simulated"]
+            console.log(date_labels)
+            for (var i = 0; i < date_labels.length; i++ )  {
+                date_labels[i] = replaceWithHour(date_labels[i])
+            }
+            console.log(date_labels)
+            latest_he = Number('{{simulated_report.HE_HbA1c}}')
+            second_he = Number('{{latest_report.HE_HbA1c}}')
+            he_data = [second_he, latest_he]
+            for (var i = 0; i < he_data.length; i++ )  {
+                he_data[i] = replaceWithNull(he_data[i])
+            }
+            console.log(he_data)
+            const data1 = {
+                labels: date_labels,
+                datasets: [{
+                    label: "Hemoglobin_A1c(%)*",
+                    data: he_data,
+                    borderWidth: 2,
+                    backgroundColor: ["rgb(254, 233, 220)","rgb(250, 180, 139)"],
+                    barPercentage: 0.6,
+                    barThickness: 23,
+                    datalabels: {
+                        color: "black",
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 1
+                    }
+            }]
+            };
+
+            latest_wc = Number('{{simulated_report.HE_wc}}')
+            second_wc = Number('{{latest_report.HE_wc}}')
+            wc_data = [second_wc, latest_wc]
+            for (var i = 0; i < wc_data.length; i++ )  {
+                wc_data[i] = replaceWithNull(wc_data[i])
+            }
+            console.log(wc_data)
+            const data2 = {
+                labels: date_labels,
+                datasets: [{
+                    label: "Glucose",
+                    data: wc_data,
+                    borderWidth: 2,
+                    backgroundColor: ["rgb(254, 233, 220)","rgb(250, 180, 139)"],
+                    barPercentage: 0.6,
+                    barThickness: 23,
+                    datalabels: {
+                        color: "black",
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 1
+                    }
+                }]
+            };
+
+            latest_tg = Number('{{simulated_report.HE_TG}}')
+            second_tg = Number('{{latest_report.HE_TG}}')
+            tg_data = [second_tg, latest_tg]
+            for (var i = 0; i < tg_data.length; i++ )  {
+                tg_data[i] = replaceWithNull(tg_data[i])
+            }
+            console.log(tg_data)
+            const data3 = {
+                labels: date_labels,
+                datasets: [{
+                    label: "Cholesterol*",
+                    data: tg_data,
+                    borderWidth: 2,
+                    barPercentage: 0.6,
+                    barThickness: 23,
+                    backgroundColor: ["rgb(254, 233, 220)","rgb(250, 180, 139)"],
+                    datalabels: {
+                        color: "black",
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 1
+                    }
+                }]
+            };
+
+            latest_HP = Number('{{simulated_report.HE_HP}}')
+            second_HP = Number('{{latest_report.HE_HP}}')
+            HP_data = [second_HP, latest_HP]
+            for (var i = 0; i < HP_data.length; i++ )  {
+                HP_data[i] = replaceWithNull(HP_data[i])
+            }
+            console.log(HP_data)
+            const data4 = {
+                labels: date_labels,
+                datasets: [{
+                    label: "Hypertension Status* (by test)",
+                    data: HP_data,
+                    borderWidth: 2,
+                    barPercentage: 0.6,
+                    barThickness: 23,
+                    backgroundColor: ["rgb(254, 233, 220)","rgb(250, 180, 139)"],
+                    datalabels: {
+                        color: "black",
+                        anchor: 'center',
+                    }
+                }]
+            };
+
+            latest_fat = Number('{{simulated_report.N_FAT}}')
+            second_fat = Number('{{latest_report.N_FAT}}')
+            fat_data = [second_fat, latest_fat]
+            for (var i = 0; i < fat_data.length; i++ )  {
+                fat_data[i] = replaceWithNull(fat_data[i])
+            }
+            console.log(fat_data)
+            const data5 = {
+                labels: date_labels,
+                datasets: [{
+                    label: "Daily Intake of Fat (g)",
+                    data: fat_data,
+                    borderWidth: 2,
+                    barPercentage: 0.6,
+                    barThickness: 23,
+                    backgroundColor: ["rgb(254, 233, 220)","rgb(250, 180, 139)"],
+                    datalabels: {
+                        color: "black",
+                        anchor: 'end',
+                        align: 'end',
+                        offset: 1
+                    }
+                }]
+            };
+
+            const canvasBackgroundColor = {
+                id: 'canvasBackgroundColor',
+                beforeDraw(chart, args, pluginOptions) {
+                    const { ctx, chartArea: {top, bottom, left, right, width}, scales: {x,y} } = chart;
+                    ctx.save();
+
+                    bgColors(50, 100, 'rgba(194,41,41,0.2)')
+                    bgColors(0, 50,'rgba(67,161,69,0.2)')
+
+                    function bgColors(low, high, color) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(left, y.getPixelForValue(high), width, y.getPixelForValue(low) - y.getPixelForValue(high));
+                        ctx.restore();
+                    }
+                }
+            };
+
+            const canvasBackgroundColor1 = {
+                id: 'canvasBackgroundColor1',
+                beforeDraw(chart, args, pluginOptions) {
+                    const { ctx, chartArea: {top, bottom, left, right, width}, scales: {x,y} } = chart;
+                    ctx.save();
+
+                    bgColors(6.5, 15.5, 'rgba(194,41,41,0.15)')
+                    bgColors(0, 6.5,'rgba(67,161,69,0.15)')
+
+                    function bgColors(low, high, color) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(left, y.getPixelForValue(high), width, y.getPixelForValue(low) - y.getPixelForValue(high));
+                        ctx.restore();
+                    }
+                }
+            };
+
+            const canvasBackgroundColor2 = {
+                id: 'canvasBackgroundColor1',
+                beforeDraw(chart, args, pluginOptions) {
+                    const { ctx, chartArea: {top, bottom, left, right, width}, scales: {x,y} } = chart;
+                    ctx.save();
+
+                    bgColors(88, 140, 'rgba(194,41,41,0.15)')
+                    bgColors(0, 88,'rgba(67,161,69,0.15)')
+
+                    function bgColors(low, high, color) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(left, y.getPixelForValue(high), width, y.getPixelForValue(low) - y.getPixelForValue(high));
+                        ctx.restore();
+                    }
+                }
+            };
+
+            const canvasBackgroundColor3 = {
+                id: 'canvasBackgroundColor1',
+                beforeDraw(chart, args, pluginOptions) {
+                    const { ctx, chartArea: {top, bottom, left, right, width}, scales: {x,y} } = chart;
+                    ctx.save();
+
+                    bgColors(150, 500, 'rgba(194,41,41,0.15)')
+                    bgColors(0, 150,'rgba(67,161,69,0.15)')
+
+                    function bgColors(low, high, color) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(left, y.getPixelForValue(high), width, y.getPixelForValue(low) - y.getPixelForValue(high));
+                        ctx.restore();
+                    }
+                }
+            };
+
+            const canvasBackgroundColor4 = {
+                id: 'canvasBackgroundColor1',
+                beforeDraw(chart, args, pluginOptions) {
+                    const { ctx, chartArea: {top, bottom, left, right, width}, scales: {x,y} } = chart;
+                    ctx.save();
+
+                    bgColors(3, 4, 'rgba(194,41,41,0.15)')
+                    bgColors(0, 3,'rgba(67,161,69,0.15)')
+
+                    function bgColors(low, high, color) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(left, y.getPixelForValue(high), width, y.getPixelForValue(low) - y.getPixelForValue(high));
+                        ctx.restore();
+                    }
+                }
+            };
+
+            const canvasBackgroundColor5 = {
+                id: 'canvasBackgroundColor1',
+                beforeDraw(chart, args, pluginOptions) {
+                    const { ctx, chartArea: {top, bottom, left, right, width}, scales: {x,y} } = chart;
+                    ctx.save();
+
+                    bgColors(32, 250, 'rgba(194,41,41,0.15)')
+                    bgColors(0, 32,'rgba(67,161,69,0.15)')
+
+                    function bgColors(low, high, color) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(left, y.getPixelForValue(high), width, y.getPixelForValue(low) - y.getPixelForValue(high));
+                        ctx.restore();
+                    }
+                }
+            };
+
+            const diabeticLabel = {
+                id: 'diabeticLabel',
+                beforeDraw(chart, args, pluginOptions) {
+                    const { ctx, chartArea: {top, bottom, left, right, width}, scales: {x,y} } = chart;
+                    ctx.save();
+
+                    // diabetic label
+                    ctx.font = '80px Arial';
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.fillText('Diabetic', width*2/5, y.getPixelForValue(60));
+                    ctx.textAlign = 'left';
+                    ctx.restore();
+
+                    // normal label
+                    ctx.font = '80px Arial';
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.fillText('Normal', width*2/5, y.getPixelForValue(10));
+                    ctx.textAlign = 'left';
+                    ctx.restore();
+                }
+            };
+
+            const diabeticLine1 = {
+                id: "diabeticLine1",
+                beforeDraw(chart, args, options) {
+                    const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+                    {x, y} } = chart;
+                    ctx.save();
+
+                    ctx.strokeStyle = 'rgb(249, 173, 129)';
+                    ctx.strokeRect(left, y.getPixelForValue(6.5), width, 0);
+                    ctx.restore();
+
+                    // diabetic label
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = 'rgb(249, 173, 129)';
+                    ctx.fillText('6.5', width*1.15, y.getPixelForValue(7.2));
+                    ctx.textAlign = 'right';
+                    ctx.restore();
+
+
+                }
+            };
+
+            const diabeticLine2 = {
+                id: "diabeticLine2",
+                beforeDraw(chart, args, options) {
+                    const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+                    {x, y} } = chart;
+                    ctx.save();
+
+                    ctx.strokeStyle = 'rgb(249, 173, 129)';
+                    ctx.strokeRect(left, y.getPixelForValue(88), width, 0);
+                    ctx.restore();
+
+                    // diabetic label
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = 'rgb(249, 173, 129)';
+                    ctx.fillText('88', width*1.14, y.getPixelForValue(95));
+                    ctx.textAlign = 'right';
+                    ctx.restore();
+
+
+                }
+            };
+
+            const diabeticLine3 = {
+                id: "diabeticLine3",
+                beforeDraw(chart, args, options) {
+                    const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+                    {x, y} } = chart;
+                    ctx.save();
+
+                    ctx.strokeStyle = 'rgb(249, 173, 129)';
+                    ctx.strokeRect(left, y.getPixelForValue(150), width, 0);
+                    ctx.restore();
+
+                    // diabetic label
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = 'rgb(249, 173, 129)';
+                    ctx.fillText('150', width*1.14, y.getPixelForValue(175));
+                    ctx.textAlign = 'right';
+                    ctx.restore();
+
+
+                }
+            };
+
+            const diabeticLine4 = {
+                id: "diabeticLine4",
+                beforeDraw(chart, args, options) {
+                    const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+                    {x, y} } = chart;
+                    ctx.save();
+
+                    ctx.strokeStyle = 'rgb(249, 173, 129)';
+                    ctx.strokeRect(left, y.getPixelForValue(3), width, 0);
+                    ctx.restore();
+
+                    // diabetic label
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = 'rgb(249, 173, 129)';
+                    ctx.fillText('3', width*1.06, y.getPixelForValue(3.2));
+                    ctx.textAlign = 'right';
+                    ctx.restore();
+
+
+                }
+            };
+
+            const diabeticLine5 = {
+                id: "diabeticLine5",
+                beforeDraw(chart, args, options) {
+                    const {ctx, chartArea: { top, right, bottom, left, width, height}, scales:
+                    {x, y} } = chart;
+                    ctx.save();
+
+                    ctx.strokeStyle = 'rgb(249, 173, 129)';
+                    ctx.strokeRect(left, y.getPixelForValue(32), width, 0);
+                    ctx.restore();
+
+                    // diabetic label
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillStyle = 'rgb(249, 173, 129)';
+                    ctx.fillText('32', width*1.14, y.getPixelForValue(45));
+                    ctx.textAlign = 'right';
+                    ctx.restore();
+
+
+                }
+            };
+
+            // config
+            const config = {
+                type: 'line',
+                data: data,
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            max: 100,
+                            min: 0,
+                        }
+                    }
+                },
+                plugins: [canvasBackgroundColor, ChartDataLabels, diabeticLabel]
+            };
+
+            const config1 = {
+                type: 'bar',
+                data: data1,
+                options: {
+                    scales: {
+                        y: {
+                            max: 15.5,
+                            min: 0,
+                        }
+                    }
+                },
+                plugins: [canvasBackgroundColor1, ChartDataLabels, diabeticLine1]
+            };
+
+            const config2 = {
+                type: 'bar',
+                data: data2,
+                options: {
+                    scales: {
+                        y: {
+                            max: 140,
+                            min: 0,
+                        }
+                    }
+                },
+                plugins: [canvasBackgroundColor2, ChartDataLabels, diabeticLine2]
+            };
+
+            const config3 = {
+                type: 'bar',
+                data: data3,
+                options: {
+                    scales: {
+                        y: {
+                            max: 500,
+                            min: 0,
+                        }
+                    }
+                },
+                plugins: [canvasBackgroundColor3, ChartDataLabels, diabeticLine3]
+            };
+
+            const config4 = {
+                type: 'bar',
+                data: data4,
+                options: {
+                    scales: {
+                        y: {
+                            ticks: {
+                                stepSize: 1,
+                                callback: (value, index, values) => (index == (values.length-1)) ? '' : value,
+                            },
+                            max: 4,
+                            min: 0,
+                        }
+                    }
+                },
+                plugins: [canvasBackgroundColor4, ChartDataLabels, diabeticLine4]
+            };
+
+            const config5 = {
+                type: 'bar',
+                data: data5,
+                options: {
+                    scales: {
+                        y: {
+                            max: 250,
+                            min: 0,
+                        }
+                    }
+                },
+                plugins: [canvasBackgroundColor5, ChartDataLabels, diabeticLine5]
+            };
+
+            // render init block
+            const myChart = new Chart(
+                document.getElementById('lineChart'),
+                config
+            );
+
+            const barChart1 = new Chart(
+                document.getElementById('barChart1'),
+                config1
+            );
+
+            const barChart2 = new Chart(
+                document.getElementById('barChart2'),
+                config2
+            );
+
+            const barChart3 = new Chart(
+                document.getElementById('barChart3'),
+                config3
+            );
+
+            const barChart4 = new Chart(
+                document.getElementById('barChart4'),
+                config4
+            );
+
+            /*const barChart5 = new Chart(
+                document.getElementById('barChart5'),
+                config5
+            );*/
+
+        </script>
+    </body>
+
+    <style>
+
+        .graph-container {
+            background-color: white;
+            box-shadow: 5px 5px 5px #aaaaaa;
+            border-radius: 20px;
+        }
+
+        .graph-title {
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            text-align: center;
+            font-size: x-large;
+            padding-left: 20px;
+            padding-top: 5px;
+            margin-top: 10px;
+        }
+
+    </style>
+
+{% endblock %}
