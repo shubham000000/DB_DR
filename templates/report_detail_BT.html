@@ -135,40 +135,8 @@
         </div>
       </div>
     </div>
-    <div class="chartCard">
-        <div class="textBox">
-          <h3 id="advice">Advices</h3>
-          
-          <div class="inline" style="display:flex">
-            <p class="adviceName">{{ report.advice_list.0 }}</p>
-            {% if report.advice_link_list.0 != "" %}
-              <a id="link" href="{{ report.advice_link_list.0 }}" style="margin-left: 20px;">Learn more</a>
-            {% else %}
-            {% endif %}
-          </div>
-          <div class="inline" style="display:flex">
-            <p class="adviceName">{{ report.advice_list.1 }}</p>
-            {% if report.advice_link_list.1 != "" %}
-              <a id="link" href="{{ report.advice_link_list.1 }}" style="margin-left: 20px;">Learn more</a>
-            {% else %}
-            {% endif %}
-          </div>
-          <div class="inline" style="display:flex">
-            <p class="adviceName">{{ report.advice_list.2 }}</p>
-            {% if report.advice_link_list.2 != "" %}
-              <a id="link" href="{{ report.advice_link_list.2 }}" style="margin-left: 20px;">Learn more</a>
-            {% else %}
-            {% endif %}
-          </div>
 
-        </div>
-    </div>
-    <div class="chartCard">
-      <div class="inline">
-        <a href="{{ url_for('appointment_page') }}" type="button" class="btn btn-warning"
-        style="margin-bottom: 10px; margin-left: auto; margin-right: auto;">Make Appointment</a>
-      </div>
-    </div>
+
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js" integrity="sha512-Tfw6etYMUhL4RTki37niav99C6OHwMDB2iBT5S5piyHO+ltK2YX8Hjy9TXxhE1Gm/TmAV0uaykSpnHKFIAif/A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -207,6 +175,7 @@
     const HE_HP = '{{ report.HE_HP }}';
     const pa_totMET = '{{ report.pa_totMET }}';
     const HE_HDL_st2 = '{{ report.HE_HDL_st2 }}';
+    const HE_glu = '{{ report.HE_glu }}';
     const HE_HTG = '{{ report.HE_HTG }}';
     const HE_dbp = '{{ report.HE_dbp }}';
     const DI3_dg = '{{ report.DI3_dg }}';
@@ -215,6 +184,8 @@
     const HE_BUN = '{{ report.HE_BUN }}';
     const sm_presnt = '{{ report.sm_presnt }}';
     const HE_crea = '{{ report.HE_crea }}';
+
+    const HE_chol = '{{ report.HE_chol }}';
 
     const HE_HbA1c_diabetic = 7.248061389337642;
     const HE_DMfh_diabetic = 0;
@@ -258,6 +229,16 @@
                          "                        Stroke diagnosis", "Systolic blood pressure (mmHg)", "              Cardiovascular disease", 
                          "       Blood urea nitrogen (mg/dL)", "              Current smoking status", " Blood serum creatinine (mg/dL)"]
   
+    // const featureValue = [HE_sbp, HE_chol, HE_glu, HE_HbA1c]
+    // const diabeticValue = [HE_sbp_diabetic, HE_chol_diabetic, HE_glu_diabetic, HE_HbA1c_diabetic]
+    // const normalValue = [HE_sbp_normal, HE_chol_normal, HE_glu_normal, HE_HbA1c_normal]
+    // const featureName = ["               Hemoglobin_A1c (%)", "            Diabetes family history", "         Waist circumference (cm)", 
+    //                      "               Triglycerides (mg/dL)", "                 Hypertension status", "                Total MET (min/week)", 
+    //                      "           HDL cholesterol (mg/dL)", "          Hyper triglycerides status", "Diastolic blood pressure (mmHg)", 
+    //                      "                        Stroke diagnosis", "Systolic blood pressure (mmHg)", "              Cardiovascular disease", 
+    //                      "       Blood urea nitrogen (mg/dL)", "              Current smoking status", " Blood serum creatinine (mg/dL)"]
+    // const featureName = ["Systolic blood pressure (mmHg)", "Total Cholesterol (mg/dL)", "Fasting Blood Sugar (mg/dL)", "Hemoglobin_A1c (%)"]
+                     
     secondLayer = []
     const firstLayerBackground =[];
     const firstLayerBorder = [];

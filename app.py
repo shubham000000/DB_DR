@@ -28,7 +28,7 @@ from flask_mysqldb import MySQL
 import pymysql
 
 from flask import Flask, request
-from flask_restful import Api, Resource
+
 
 
 app = Flask(__name__)
@@ -38,7 +38,7 @@ app = Flask(__name__)
 app.config['MYSQL_HOST'] = 'diabet-test-shubham.c9cog5gepkr5.ap-southeast-1.rds.amazonaws.com'
 app.config['MYSQL_USER'] = 'admin'
 app.config['MYSQL_PASSWORD'] = 'Shubham123'
-app.config['MYSQL_DB'] = 'diabetic_app'
+app.config['MYSQL_DB'] = 'db_dr_model'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'  # This makes results return as dictionaries
 
 mysql = MySQL(app)
@@ -73,17 +73,19 @@ latest_diagnosis = {}
 simulation_report = {}
 
 #load machine learning model
-model = pickle.load(open("finalized_model.pkl", 'rb'))
+#model = pickle.load(open("finalized_model.pkl", 'rb'))
+model = pickle.load(open("DR_finalized_model_01102023.pkl", 'rb'))
+
 
 # @app.route('/')
 # @app.route('/home')
 # def home_page():
 #     return render_template('home.html')
 
-@app.route('/login', methods=['POST', 'GET'])
-def login_page():
-    form = LoginForm()
-    return render_template('login.html', title='Login', form=form)
+# @app.route('/login', methods=['POST', 'GET'])
+# def login_page():
+#     form = LoginForm()
+#     return render_template('login.html', title='Login', form=form)
 
 # @app.route('/register', methods=['POST', 'GET'])
 # def register_page():
@@ -99,20 +101,34 @@ def login_page():
 #             email = result.get('email')
 #             password = result.get('password')
 #             try:
-#                 user = pb.auth().sign_in_with_email_and_password(email, password)
+#                 #based on new aws rds database
+#                 cursor = db.cursor()
+#                 # Execute an SQL query to fetch the user with the provided username and password
+#                 cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+
+#                 user = cursor.fetchone()
+
+#                 if user and user['password'] == password:
+#                     session['email'] = email
+#                     global person
+#                     person["is_logged_in"] = True
+#                     person["email"] = email
+#                     person["uid"] = user['uid']
+#                     #Get the name of the user
+#                     #data = db.collection("users").document(person["uid"]).get().to_dict()
+#                     person["username"] = user["username"]
+#                     person["fullname"] = user["fullname"]
+#                     person['dob'] = user["dob"]
+#                     person["risk_score_goal"] = user["risk_score_goal"]
+#                     #Redirect to home page
+#                     return redirect(url_for('home_page'))
+                    
+#                 else:
+#                     return "Login failed. Please check your email and password."
+
+#                 #user = pb.auth().sign_in_with_email_and_password(email, password)
 #                 #Insert the user data in the global person
-#                 global person
-#                 person["is_logged_in"] = True
-#                 person["email"] = email
-#                 person["uid"] = user['localId']
-#                 #Get the name of the user
-#                 data = db.collection("users").document(person["uid"]).get().to_dict()
-#                 person["username"] = data["username"]
-#                 person["fullname"] = data["fullname"]
-#                 person['dob'] = data["dob"]
-#                 person["risk_score_goal"] = data["risk_score_goal"]
-#                 #Redirect to home page
-#                 return redirect(url_for('home_page'))
+                
 #             except Exception as e:
 #                 print(e)
 #                 return redirect(url_for('login_page'))
@@ -131,24 +147,37 @@ def login_page():
 #             username = result.get('username')
 #             dob = result.get('birthday')
 #             try:
-#                 #Try creating the user account using the provided data
-#                 auth.create_user(email=email, password=password)
-#                 user = pb.auth().sign_in_with_email_and_password(email, password)
-#                 #Add data to global person
-#                 global person
-#                 person["is_logged_in"] = True
-#                 person["email"] = email
-#                 person["uid"] = user['localId']
-#                 person["fullname"] = fullname
-#                 person["username"] = username
-#                 person['dob'] = dob
-#                 person["risk_score_goal"] = 40
-#                 pb.auth().send_email_verification(user['idToken'])
-#                 #Append data to the firebase realtime database
-#                 data = {"fullname": fullname, "username": username, "email": email, "password": password, 'dob': dob, "risk_score_goal":40}
-#                 db.collection("users").document(person["uid"]).set(data)
-#                 #Go to home page
-#                 return redirect(url_for('home_page'))
+#                 # #Try creating the user account using the provided data
+#                 # auth.create_user(email=email, password=password)
+#                 # user = pb.auth().sign_in_with_email_and_password(email, password)
+
+#                 #based on new aws rds database
+#                 cursor = db.cursor()
+#                 # Execute an SQL query to fetch the user with the provided username and password
+#                 cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+
+#                 user = cursor.fetchone()
+
+#                 if user and user['password'] == password:
+#                     session['email'] = email
+#                     global person
+#                     person["is_logged_in"] = True
+#                     person["email"] = email
+#                     person["uid"] = user['uid']
+#                     #Get the name of the user
+#                     #data = db.collection("users").document(person["uid"]).get().to_dict()
+#                     person["username"] = user["username"]
+#                     person["fullname"] = user["fullname"]
+#                     person['dob'] = user["dob"]
+#                     person["risk_score_goal"] = user["risk_score_goal"]
+#                     #Redirect to home page
+                  
+                    
+#                 else:
+#                     return "Login failed. Please check your email and password."
+
+
+            
 #             # if the email is registered, redirect to the login page
 #             except firebase_admin._auth_utils.EmailAlreadyExistsError as e:
 #                 return redirect(url_for('login_page'))
@@ -171,30 +200,30 @@ def home_page():
         cursor = db.cursor()
         # Execute an SQL query to fetch the user with the provided username and password
         cursor.execute(
-            "SELECT users.*, past_reports.* FROM users "
-            "JOIN past_reports ON users.email = past_reports.email "
+            "SELECT users.*, past_report.* FROM users "
+            "JOIN past_report ON users.email = past_report.email "
             "WHERE users.email = 'borghare.sb@gmail.com' "
-            "AND past_reports.diagnosis_time IN "
-            "(SELECT MAX(diagnosis_time) FROM past_reports "
-            "WHERE users.email = past_reports.email "
+            "AND past_report.diagnosis_time IN "
+            "(SELECT MAX(diagnosis_time) FROM past_report "
+            "WHERE users.email = past_report.email "
             "GROUP BY DATE(diagnosis_time)) "
-            "ORDER BY past_reports.diagnosis_time DESC;"
+            "ORDER BY past_report.diagnosis_time DESC;"
         )
 
         
-        #past_reports_ref = db.collection("users").document(person["uid"]).collection("past_reports")
+        #past_report_ref = db.collection("users").document(person["uid"]).collection("past_report")
         #data = cursor.fetchone()
         data = cursor.fetchall()
         # print(type(data[0]['diagnosis_time']))
         # print(data[0]['diagnosis_time'].date())
         #print(data[0])
         #risk_score_goal = data['risk_score_goal']
-        past_reports_ref = data
-        #past_reports_ref = cursor.fetchone()
+        past_report_ref = data
+        #past_report_ref = cursor.fetchone()
 
-        # query = past_reports_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING).limit(1)
+        # query = past_report_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING).limit(1)
         # results = query.stream()
-        results = past_reports_ref
+        results = past_report_ref
         cursor.close()
 
         #report_list = []
@@ -202,8 +231,8 @@ def home_page():
 
         # data = db.collection("users").document(person["uid"]).get().to_dict()
         risk_score_goal = data[0]['risk_score_goal']
-        # past_reports_ref = db.collection("users").document(person["uid"]).collection("past_reports")
-        # query = past_reports_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING).limit(5)
+        # past_report_ref = db.collection("users").document(person["uid"]).collection("past_report")
+        # query = past_report_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING).limit(5)
         # results = query.stream()
         #report_list = []
         latest_report = []
@@ -224,6 +253,7 @@ def home_page():
             print("Diagnosis time:", latest_report['diagnosis_time'])
 
             date_time_str = latest_report['diagnosis_time'] + timedelta(hours=8)
+            #date_time_str = "2023-09-10 09:21:18"
             latest_diagnosis_date = date_time_str.strftime("%Y-%m-%d")
             #print(report_list[0])
             #print(len(report_list))
@@ -316,10 +346,8 @@ def db_simulation_page():
         #                         "pa_vigMET": 0, "pa_modMET": 0, "pa_totMET": 0}
         latest_report = {"age": 0, "HE_ht": 0, "HE_wt": 0, "HE_wc": 0,
                          "HE_sbp": 0, "HE_dbp": 0, "HE_chol": 0, "HE_HDL_st2": 0, "HE_TG": 0,
-                                "HE_glu": 0, "HE_HbA1c": 0, "HE_BUN": 0, "HE_crea": 0,
-                                "pa_vig_tm": 0,
-                                "pa_mod_tm": 0, "pa_walkMET": 0, "pa_aerobic": 0,
-                                "pa_vigMET": 0, "pa_modMET": 0, "pa_totMET": 0}
+                                "HE_glu": 0, "HE_HbA1c": 0
+                                }
         diagnosis_str = ''
         diagnosis_date = ''
         global email
@@ -328,22 +356,22 @@ def db_simulation_page():
         cursor = db.cursor()
        # Execute an SQL query to fetch the user with the provided username and password
         cursor.execute(
-            "SELECT users.*, past_reports.* FROM users "
-            "JOIN past_reports ON users.email = past_reports.email "
+            "SELECT users.*, past_report.* FROM users "
+            "JOIN past_report ON users.email = past_report.email "
             "WHERE users.email = %s "
-            "AND past_reports.diagnosis_time IN "
-            "(SELECT MAX(diagnosis_time) FROM past_reports "
-            "WHERE users.email = past_reports.email "
+            "AND past_report.diagnosis_time IN "
+            "(SELECT MAX(diagnosis_time) FROM past_report "
+            "WHERE users.email = past_report.email "
             "GROUP BY DATE(diagnosis_time)) "
-            "ORDER BY past_reports.diagnosis_time DESC;", (email)
+            "ORDER BY past_report.diagnosis_time DESC;", (email)
         )
 
-        #past_reports_ref = db.collection("users").document(person["uid"]).collection("past_reports")
-        past_reports_ref = cursor.fetchone()
+        #past_report_ref = db.collection("users").document(person["uid"]).collection("past_report")
+        past_report_ref = cursor.fetchone()
 
-        # query = past_reports_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING).limit(1)
+        # query = past_report_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING).limit(1)
         # results = query.stream()
-        results = past_reports_ref
+        results = past_report_ref
         cursor.close()
 
         #report_list = []
@@ -355,6 +383,8 @@ def db_simulation_page():
         if len(report_list) != 0:
             #latest_report = report_list[0]
             latest_report = report_list
+
+
             
             date_time_str = latest_report['diagnosis_time'] + timedelta(hours=8)
 
@@ -386,23 +416,44 @@ def db_simulation_user():
     if request.method == 'POST':
         result = request.form
         # get basic information
+        todays_date = date.today()
+
         sex = float(result.get('sex'))
         age = float(result.get('age'))
         HE_ht = float(result.get('HE_ht'))
         HE_wt = float(result.get('HE_wt'))
         HE_wc = float(result.get('HE_wc'))
         # calculate BMI
-        HE_BMI = HE_wt / (HE_ht / 100) ** 2
+        HE_BMI = HE_wt / ((HE_ht / 100) ** 2)
+        DE1_ag = float(result.get('DE1_ag'))
+        DE1_dur = (todays_date.year) - DE1_ag
+        eGFR = float(result.get('eGFR'))
+        print("Duration:",DE1_dur)
         # pre-processing for obesity
-        if HE_BMI <= 18.5:
-            HE_obe = 1
-        elif HE_BMI <= 25:
-            HE_obe = 2
-        else:
-            HE_obe = 3
+        # if HE_BMI <= 18.5:
+        #     HE_obe_6c = 1
+        # elif HE_BMI <= 25:
+        #     HE_obe = 2
+        # else:
+        #     HE_obe = 3
+        # HE_BMI required
+        if (HE_BMI<18.5):
+            HE_obe_6c = 1
+        elif (HE_BMI>=18.5) & (HE_BMI<23.0):
+            HE_obe_6c = 2
+        elif (HE_BMI>=23.0) & (HE_BMI<25.0):
+            HE_obe_6c = 3
+        elif (HE_BMI>=25.0) & (HE_BMI<30.0):
+            HE_obe_6c = 4
+        elif (HE_BMI>=30.0) & (HE_BMI<35.0):
+            HE_obe_6c = 5
+        elif (HE_BMI>=35.0):
+            HE_obe_6c = 6
 
         # Get blood test reusults
+        #removed the question (Have you done blood testing? in UI)
         bloodtest = float(result.get('bloodtest'))
+        #bloodtest = float(1)
         if bloodtest == 1:
             HE_sbp = float(result.get('HE_sbp'))
             HE_dbp = float(result.get('HE_dbp'))
@@ -411,8 +462,8 @@ def db_simulation_user():
             HE_TG = float(result.get('HE_TG'))
             HE_glu = float(result.get('HE_glu'))
             HE_HbA1c = float(result.get('HE_HbA1c'))
-            HE_BUN = float(result.get('HE_BUN'))
-            HE_crea = float(result.get('HE_crea'))
+            # HE_BUN = float(result.get('HE_BUN'))
+            #HE_crea = float(result.get('HE_crea'))
         else:
             HE_sbp = None
             HE_dbp = None
@@ -421,31 +472,38 @@ def db_simulation_user():
             HE_TG = None
             HE_glu = None
             HE_HbA1c = None
-            HE_BUN = None
-            HE_crea = None
+            # HE_BUN = None
+            # HE_crea = None
+
+        if (HE_sbp >=140 or HE_dbp >= 90):
+            HE_HP_2c = 1
+        else: 
+            HE_HP_2c = 0
 
         # get lifestyles
         # N_PROT = float(result.get('N_PROT'))
         # N_FAT = float(result.get('N_FAT'))
         # N_CHO = float(result.get('N_CHO'))
-        dr_month = float(result.get('dr_month'))
-        dr_high = float(result.get('dr_high'))
-        sm_presnt = float(result.get('sm_presnt'))
-        pa_vig_tm = float(result.get('pa_vig_tm'))
-        pa_mod_tm = float(result.get('pa_mod_tm'))
-        pa_walkMET = float(result.get('pa_walkMET'))
-        pa_aerobic = float(result.get('pa_aerobic'))
+
+        # dr_month = float(result.get('dr_month'))
+        # dr_high = float(result.get('dr_high'))
+
+        sm_presnt_3c = float(result.get('sm_presnt_3c'))
+        # pa_vig_tm = float(result.get('pa_vig_tm'))
+        # pa_mod_tm = float(result.get('pa_mod_tm'))
+        # pa_walkMET = float(result.get('pa_walkMET'))
+        # pa_aerobic = float(result.get('pa_aerobic'))
 
         # preprocess for physical activity
-        pa_vigMET = round(8 * pa_vig_tm, 2)
-        pa_modMET = round(4 * pa_mod_tm, 2)
-        pa_totMET = round(pa_walkMET * 3.3 + pa_modMET + pa_vigMET, 2)
+        # pa_vigMET = round(8 * pa_vig_tm, 2)
+        # pa_modMET = round(4 * pa_mod_tm, 2)
+        # pa_totMET = round(pa_walkMET * 3.3 + pa_modMET + pa_vigMET, 2)
 
         # get history disease
         # DI3_dg = float(result.get('DI3_dg'))
         # DI4_dg = float(result.get('DI4_dg'))
         HE_DMfh = float(result.get('HE_DMfh'))
-        DE1_3 = float(result.get('DE1_3'))
+        #DE1_3 = float(result.get('DE1_3'))
         # DI1_2 = float(result.get('DI1_2'))
         # DI2_2 = float(result.get('DI2_2'))
         DE1_31 = result.get('DE1_31')
@@ -461,34 +519,34 @@ def db_simulation_user():
             DE1_32 = None
 
         # preproccessing for HE_HP
-        HE_HP = None
+        HE_HP_2c = 1
         if bloodtest == 1:
             if 0 < HE_sbp < 120 and 0 < HE_dbp < 80:
-                HE_HP = 1
+                HE_HP_2c = 1
             elif 120 <= HE_sbp < 140 or 80 <= HE_dbp < 90:
-                HE_HP = 2
+                HE_HP_2c = 2
             elif 140 <= HE_sbp or 90 <= HE_dbp :
-                HE_HP = 3
+                HE_HP_2c = 3
             else:
-                HE_HP = None
+                HE_HP_2c = None
         else:
-            HE_HP = None
+            HE_HP_2c = None
 
         # preprocessing for HE_HCHOL
         HE_HCHOL = 0
         if bloodtest == 1:
             if HE_chol >= 240:
-                HE_HCHO = 1
+                HE_HCHOL = 1
         else:
             HE_HCHOL = 0
 
-        # preprocessign for HE_HTG
-        HE_HTG = 0
-        if bloodtest == 1:
-            if HE_TG >= 200:
-                HE_HTG = 1
-        else:
-            HE_HTG = 0
+        # # preprocessign for HE_HTG
+        # HE_HTG = 0
+        # if bloodtest == 1:
+        #     if HE_TG >= 200:
+        #         HE_HTG = 1
+        # else:
+        #     HE_HTG = 0
 
         try:
             global simulation_report
@@ -513,14 +571,20 @@ def db_simulation_user():
             predicted_class_glucose_100 = None
 
             if bloodtest == 1:
+                # t = pd.DataFrame(np.array(
+                #     [HE_wc, HE_BMI, HE_sbp, HE_dbp, HE_HbA1c, HE_BUN, HE_crea,
+                #      HE_HDL_st2, HE_TG, age, HE_DMfh, HE_obe, HE_HP, HE_HCHOL,
+                #      HE_HTG, sm_presnt, sex]).reshape(-1, 17),
+                #                  columns=['HE_wc', 'HE_BMI', 'HE_sbp',
+                #                           'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea', 'HE_HDL_st2',
+                #                           'HE_TG', 'age', 'HE_DMfh', 'HE_obe',
+                #                           'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
                 t = pd.DataFrame(np.array(
-                    [pa_totMET, HE_wc, HE_BMI, HE_sbp, HE_dbp, HE_HbA1c, HE_BUN, HE_crea,
-                     HE_HDL_st2, HE_TG, age, HE_DMfh, HE_obe, HE_HP, HE_HCHOL,
-                     HE_HTG, sm_presnt, sex]).reshape(-1, 18),
-                                 columns=['pa_totMET', 'HE_wc', 'HE_BMI', 'HE_sbp',
-                                          'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea', 'HE_HDL_st2',
-                                          'HE_TG', 'age', 'HE_DMfh', 'HE_obe',
-                                          'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
+                    [age, HE_sbp, HE_dbp, HE_ht, HE_wt, HE_wc, HE_BMI, HE_glu, HE_HbA1c, HE_chol, 
+                     HE_HDL_st2, HE_TG, DE1_dur, eGFR, sex, DE1_31, DE1_32, HE_HP_2c, HE_HCHOL, 
+                     HE_DMfh, sm_presnt_3c, HE_obe_6c]).reshape(-1,22),
+                            columns=['age', 'HE_sbp', 'HE_dbp', 'HE_ht', 'HE_wt', 'HE_wc', 'HE_BMI', 'HE_glu', 'HE_HbA1c', 'HE_chol', 'HE_HDL_st2', 'HE_TG',
+                        'DE1_dur', 'eGFR', 'sex', 'DE1_31', 'DE1_32', 'HE_HP_2c', 'HE_HCHOL', 'HE_DMfh', 'sm_presnt_3c', 'HE_obe_6c'])
                 diagnosed_class = model.predict(t)
                 predicted_class = float(diagnosed_class[0])
                 risk_score = model.predict_proba(t)[0][1]
@@ -531,13 +595,20 @@ def db_simulation_user():
             # risk score prediction for without blood test in confidence interval
             else:
                 # generate risk score if HE_glu being in the 25 th percentile to 50 th percentile
+                # removed the feature (pa_totMET)
+                # t_50 = pd.DataFrame(np.array(
+                #     [HE_wc, HE_BMI, 118.98240115718419, 75.55882352941177,
+                #      5.534691417550627, 15.428881388621022, 0.8001157184185149, 51.822621449955356, 121.89223722275796,
+                #      age, HE_DMfh, HE_obe, 1, 0, 0, sm_presnt, sex]).reshape(-1, 17), columns=['HE_wc', 'HE_BMI', 'HE_sbp',
+                #                                                         'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea', 'HE_HDL_st2',
+                #                                                         'HE_TG', 'age', 'HE_DMfh', 'HE_obe',
+                #                                                         'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
                 t_50 = pd.DataFrame(np.array(
-                    [pa_totMET, HE_wc, HE_BMI, 118.98240115718419, 75.55882352941177,
-                     5.534691417550627, 15.428881388621022, 0.8001157184185149, 51.822621449955356, 121.89223722275796,
-                     age, HE_DMfh, HE_obe, 1, 0, 0, sm_presnt, sex]).reshape(-1, 18), columns=['pa_totMET','HE_wc', 'HE_BMI', 'HE_sbp',
-                                                                        'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea', 'HE_HDL_st2',
-                                                                        'HE_TG', 'age', 'HE_DMfh', 'HE_obe',
-                                                                        'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
+                    [age, 118.98240115718419, 75.55882352941177, HE_ht, HE_wt, HE_wc, HE_BMI, HE_glu, 5.534691417550627, 0, 
+                     51.822621449955356, 121.89223722275796, DE1_dur, eGFR, sex, DE1_31, DE1_32, 1, HE_HCHOL, 
+                     HE_DMfh, sm_presnt_3c, HE_obe_6c]).reshape(-1,22),
+                            columns=['age', 'HE_sbp', 'HE_dbp', 'HE_ht', 'HE_wt', 'HE_wc', 'HE_BMI', 'HE_glu', 'HE_HbA1c', 'HE_chol', 'HE_HDL_st2', 'HE_TG',
+                        'DE1_dur', 'eGFR', 'sex', 'DE1_31', 'DE1_32', 'HE_HP_2c', 'HE_HCHOL', 'HE_DMfh', 'sm_presnt_3c', 'HE_obe_6c'])
                 diagnosed_class_50 = model.predict(t_50)
                 predicted_class_glucose_50 = float(diagnosed_class_50[0])
                 risk_score_50 = model.predict_proba(t_50)[0][1]
@@ -557,16 +628,22 @@ def db_simulation_user():
                 #                                                    'HE_TG', 'age', 'DI3_dg', 'DI4_dg', 'HE_DMfh',
                 #                                                    'HE_obe',
                 #                                                    'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
+                # t_75 = pd.DataFrame(np.array(
+                #     [HE_wc, HE_BMI, 124.16230366492147, 77.2324607329843,
+                #      5.739895287958115, 16.05759162303665, 0.8326178010471204, 49.74235817995025, 142.69476439790577,
+                #      age, HE_DMfh, HE_obe, 3, 0,
+                #      0, sm_presnt, sex]).reshape(-1, 17), columns=['HE_wc', 'HE_BMI', 'HE_sbp',
+                #                                                    'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea',
+                #                                                    'HE_HDL_st2',
+                #                                                    'HE_TG', 'age', 'HE_DMfh',
+                #                                                    'HE_obe',
+                #                                                    'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
                 t_75 = pd.DataFrame(np.array(
-                    [pa_totMET, HE_wc, HE_BMI, 124.16230366492147, 77.2324607329843,
-                     5.739895287958115, 16.05759162303665, 0.8326178010471204, 49.74235817995025, 142.69476439790577,
-                     age, HE_DMfh, HE_obe, 3, 0,
-                     0, sm_presnt, sex]).reshape(-1, 18), columns=['pa_totMET', 'HE_wc', 'HE_BMI', 'HE_sbp',
-                                                                   'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea',
-                                                                   'HE_HDL_st2',
-                                                                   'HE_TG', 'age', 'HE_DMfh',
-                                                                   'HE_obe',
-                                                                   'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
+                    [age, 124.16230366492147, 77.2324607329843, HE_ht, HE_wt, HE_wc, HE_BMI, HE_glu, 5.739895287958115, 0, 
+                     49.74235817995025, 142.69476439790577, DE1_dur, eGFR, sex, DE1_31, DE1_32, 3, HE_HCHOL, 
+                     HE_DMfh, sm_presnt_3c, HE_obe_6c]).reshape(-1,22),
+                            columns=['age', 'HE_sbp', 'HE_dbp', 'HE_ht', 'HE_wt', 'HE_wc', 'HE_BMI', 'HE_glu', 'HE_HbA1c', 'HE_chol', 'HE_HDL_st2', 'HE_TG',
+                        'DE1_dur', 'eGFR', 'sex', 'DE1_31', 'DE1_32', 'HE_HP_2c', 'HE_HCHOL', 'HE_DMfh', 'sm_presnt_3c', 'HE_obe_6c'])
                 diagnosed_class_75 = model.predict(t_75)
                 predicted_class_glucose_75 = float(diagnosed_class_75[0])
                 risk_score_75 = model.predict_proba(t_75)[0][1]
@@ -575,16 +652,22 @@ def db_simulation_user():
                 # print(risk_score_glucose_75)
 
                 # generate risk score if HE_glu being in the 75 th percentile to 100th percentile
+                # t_100 = pd.DataFrame(np.array(
+                #     [HE_wc, HE_BMI, 126.92238648363252, 77.0063357972545,
+                #      6.763727560718057, 16.50897571277719, 0.8618532206969378, 46.931693880777516, 172.6441393875396,
+                #      age, HE_DMfh, HE_obe, 3, 0,
+                #      0, sm_presnt, sex]).reshape(-1, 17), columns=['HE_wc', 'HE_BMI', 'HE_sbp',
+                #                                                    'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea',
+                #                                                    'HE_HDL_st2',
+                #                                                    'HE_TG', 'age', 'HE_DMfh',
+                #                                                    'HE_obe',
+                #                                                    'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
                 t_100 = pd.DataFrame(np.array(
-                    [pa_totMET, HE_wc, HE_BMI, 126.92238648363252, 77.0063357972545,
-                     6.763727560718057, 16.50897571277719, 0.8618532206969378, 46.931693880777516, 172.6441393875396,
-                     age, HE_DMfh, HE_obe, 3, 0,
-                     0, sm_presnt, sex]).reshape(-1, 18), columns=['pa_totMET', 'HE_wc', 'HE_BMI', 'HE_sbp',
-                                                                   'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea',
-                                                                   'HE_HDL_st2',
-                                                                   'HE_TG', 'age', 'HE_DMfh',
-                                                                   'HE_obe',
-                                                                   'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
+                    [age, 126.92238648363252, 77.0063357972545, HE_ht, HE_wt, HE_wc, HE_BMI, HE_glu, 6.763727560718057, 0, 
+                     46.931693880777516, 172.6441393875396, DE1_dur, eGFR, sex, DE1_31, DE1_32, 3, HE_HCHOL, 
+                     HE_DMfh, sm_presnt_3c, HE_obe_6c]).reshape(-1,22),
+                            columns=['age', 'HE_sbp', 'HE_dbp', 'HE_ht', 'HE_wt', 'HE_wc', 'HE_BMI', 'HE_glu', 'HE_HbA1c', 'HE_chol', 'HE_HDL_st2', 'HE_TG',
+                        'DE1_dur', 'eGFR', 'sex', 'DE1_31', 'DE1_32', 'HE_HP_2c', 'HE_HCHOL', 'HE_DMfh', 'sm_presnt_3c', 'HE_obe_6c'])
                 diagnosed_class_100 = model.predict(t_100)
                 predicted_class_glucose_100 = float(diagnosed_class_100[0])
                 risk_score_100 = model.predict_proba(t_100)[0][1]
@@ -593,7 +676,7 @@ def db_simulation_user():
                 print(risk_score_glucose_100)
 
                 rounded_risk_score = round((risk_score_glucose_50 + risk_score_glucose_75 + risk_score_glucose_100) / 3)
-
+            email = "borghare.sb@gmail.com"
             # store all data in dic
             diagnosis_time = (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
             simulation_report = {"diagnosis_time": (datetime.now(timezone.utc) + timedelta(hours=8)).strftime("%Y-%m-%d"),
@@ -604,45 +687,35 @@ def db_simulation_user():
                                 "predicted_class_glucose_75": predicted_class_glucose_75,
                                 "risk_score_glucose_100": risk_score_glucose_100,
                                 "predicted_class_glucose_100": predicted_class_glucose_100,
-                                "sex": sex, "age": age, "HE_ht": HE_ht, "HE_wt": HE_wt, "HE_wc": HE_wc,
-                                "HE_BMI": HE_BMI, "HE_obe": HE_obe,
-                                "bloodtest": bloodtest, "HE_sbp": HE_sbp, "HE_dbp": HE_dbp, "HE_chol": HE_chol,
-                                "HE_HDL_st2": HE_HDL_st2, "HE_TG": HE_TG,
-                                "HE_glu": HE_glu, "HE_HbA1c": HE_HbA1c, "HE_BUN": HE_BUN, "HE_crea": HE_crea,
-                                "dr_month": dr_month, "dr_high": dr_high, "sm_presnt": sm_presnt,
-                                "pa_vig_tm": pa_vig_tm,
-                                "pa_mod_tm": pa_mod_tm, "pa_walkMET": pa_walkMET, "pa_aerobic": pa_aerobic,
-                                "pa_vigMET": pa_vigMET, "pa_modMET": pa_modMET, "pa_totMET": pa_totMET,
-                                "HE_DMfh": HE_DMfh, "DE1_3": DE1_3, "DE1_31": DE1_31, "DE1_32": DE1_32, "HE_HP": HE_HP,
-                                "HE_HCHOL": HE_HCHOL, "HE_HTG": HE_HTG}
+                                "email": email, "age": age, "HE_sbp": HE_sbp, "HE_dbp": HE_dbp,
+                                "HE_ht": HE_ht, "HE_wt": HE_wt, "HE_wc": HE_wc,  "HE_BMI": HE_BMI,
+                                "HE_glu": HE_glu, "HE_HbA1c": HE_HbA1c, "HE_chol": HE_chol, "HE_HDL_st2": HE_HDL_st2,
+                                "HE_TG": HE_TG, "DE1_dur": DE1_dur, "eGFR": eGFR, "sex": sex, "DE1_31": DE1_31,
+                                "DE1_32": DE1_32, "HE_HP_2c": HE_HP_2c, "HE_HCHOL": HE_HCHOL, "HE_DMfh": HE_DMfh,
+                                "sm_presnt_3c": sm_presnt_3c, "HE_obe_6c": HE_obe_6c}
             
             # Insert user data into the database
             cursor = mysql.connection.cursor()
                 
             # Define the SQL INSERT statement
+            # removed the columns (bloodtest, dr_month, dr_high, pa_vig_tm, pa_mod_tm, pa_walkMET, pa_aerobic, DE1_3) 
             insert_query = """
-            INSERT INTO past_reports (
-                email, sex, age, diagnosis_time, diagnosed_class, HE_ht, HE_wt, HE_wc,
-                HE_BMI, HE_obe, bloodtest, HE_sbp, HE_dbp, HE_chol, HE_HDL_st2, HE_TG, HE_glu,
-                HE_HbA1c, HE_BUN, HE_crea, dr_month, dr_high, sm_presnt, pa_vig_tm, pa_mod_tm,
-                pa_walkMET, pa_aerobic, pa_vigMET, pa_modMET, pa_totMET, HE_DMfh, DE1_3, DE1_31,
-                DE1_32, HE_HP, HE_HCHOL, HE_HTG, risk_score, risk_score_glucose_50,
-                predicted_class_glucose_50, risk_score_glucose_75, predicted_class_glucose_75,
-                risk_score_glucose_100, predicted_class_glucose_100
+            INSERT INTO past_report (
+                    email,age, HE_sbp, HE_dbp, HE_ht, HE_wt, HE_wc, HE_BMI, HE_glu, HE_HbA1c, HE_chol, HE_HDL_st2, HE_TG,
+                    DE1_dur, eGFR, sex, DE1_31, DE1_32, HE_HP_2c, HE_HCHOL, HE_DMfh, sm_presnt_3c, HE_obe_6c, diagnosis_time, 
+                    diagnosed_class, risk_score, risk_score_glucose_50, predicted_class_glucose_50, risk_score_glucose_75, 
+                    predicted_class_glucose_75, risk_score_glucose_100, predicted_class_glucose_100
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             """
             # Execute the INSERT statement with the data
             cursor.execute(insert_query, (
-                email, sex, age, diagnosis_time, predicted_class, HE_ht, HE_wt, HE_wc, HE_BMI, HE_obe, 
-                bloodtest, HE_sbp, HE_dbp, HE_chol, HE_HDL_st2, HE_TG, HE_glu, HE_HbA1c, 
-                HE_BUN, HE_crea, dr_month, dr_high, sm_presnt, pa_vig_tm, pa_mod_tm, pa_walkMET, 
-                pa_aerobic, pa_vigMET, pa_modMET, pa_totMET, HE_DMfh, DE1_3, DE1_31, DE1_32, HE_HP, 
-                HE_HCHOL, HE_HTG, rounded_risk_score, risk_score_glucose_50, predicted_class_glucose_50, 
-                risk_score_glucose_75, predicted_class_glucose_75, risk_score_glucose_100, 
-                predicted_class_glucose_100
+                email,age, HE_sbp, HE_dbp, HE_ht, HE_wt, HE_wc, HE_BMI, HE_glu, HE_HbA1c, HE_chol, HE_HDL_st2, HE_TG,
+                DE1_dur, eGFR, sex, DE1_31, DE1_32, HE_HP_2c, HE_HCHOL, HE_DMfh, sm_presnt_3c, HE_obe_6c, diagnosis_time, 
+                diagnosed_class, rounded_risk_score, risk_score_glucose_50, predicted_class_glucose_50, risk_score_glucose_75, 
+                predicted_class_glucose_75, risk_score_glucose_100, predicted_class_glucose_100
             ))
 
             mysql.connection.commit()
@@ -670,9 +743,7 @@ def dr_simulation_page():
         latest_report = {"age": 0, "HE_ht": 0, "HE_wt": 0, "HE_wc": 0,
                          "HE_sbp": 0, "HE_dbp": 0, "HE_chol": 0, "HE_HDL_st2": 0, "HE_TG": 0,
                                 "HE_glu": 0, "HE_HbA1c": 0, "HE_BUN": 0, "HE_crea": 0,
-                                "pa_vig_tm": 0,
-                                "pa_mod_tm": 0, "pa_walkMET": 0, "pa_aerobic": 0,
-                                "pa_vigMET": 0, "pa_modMET": 0, "pa_totMET": 0}
+                                }
         diagnosis_str = ''
         diagnosis_date = ''
         global email
@@ -681,21 +752,21 @@ def dr_simulation_page():
         cursor = db.cursor()
        # Execute an SQL query to fetch the user with the provided username and password
         cursor.execute(
-            "SELECT users.*, past_reports.* FROM users "
-            "JOIN past_reports ON users.email = past_reports.email "
+            "SELECT users.*, past_report.* FROM users "
+            "JOIN past_report ON users.email = past_report.email "
             "WHERE users.email = %s "
-            "AND past_reports.diagnosis_time IN "
-            "(SELECT MAX(diagnosis_time) FROM past_reports "
-            "WHERE users.email = past_reports.email "
+            "AND past_report.diagnosis_time IN "
+            "(SELECT MAX(diagnosis_time) FROM past_report "
+            "WHERE users.email = past_report.email "
             "GROUP BY DATE(diagnosis_time)) "
-            "ORDER BY past_reports.diagnosis_time DESC;", (email)
+            "ORDER BY past_report.diagnosis_time DESC;", (email)
         )
-        #past_reports_ref = db.collection("users").document(person["uid"]).collection("past_reports")
-        past_reports_ref = cursor.fetchone()
+        #past_report_ref = db.collection("users").document(person["uid"]).collection("past_report")
+        past_report_ref = cursor.fetchone()
 
-        # query = past_reports_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING).limit(1)
+        # query = past_report_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING).limit(1)
         # results = query.stream()
-        results = past_reports_ref
+        results = past_report_ref
         cursor.close()
 
         #report_list = []
@@ -755,6 +826,7 @@ def dr_simulation_user():
 
         # Get blood test reusults
         bloodtest = float(result.get('bloodtest'))
+       
         if bloodtest == 1:
             HE_sbp = float(result.get('HE_sbp'))
             HE_dbp = float(result.get('HE_dbp'))
@@ -780,24 +852,24 @@ def dr_simulation_user():
         # N_PROT = float(result.get('N_PROT'))
         # N_FAT = float(result.get('N_FAT'))
         # N_CHO = float(result.get('N_CHO'))
-        dr_month = float(result.get('dr_month'))
-        dr_high = float(result.get('dr_high'))
+        # dr_month = float(result.get('dr_month'))
+        # dr_high = float(result.get('dr_high'))
         sm_presnt = float(result.get('sm_presnt'))
-        pa_vig_tm = float(result.get('pa_vig_tm'))
-        pa_mod_tm = float(result.get('pa_mod_tm'))
-        pa_walkMET = float(result.get('pa_walkMET'))
-        pa_aerobic = float(result.get('pa_aerobic'))
+        # pa_vig_tm = float(result.get('pa_vig_tm'))
+        # pa_mod_tm = float(result.get('pa_mod_tm'))
+        # pa_walkMET = float(result.get('pa_walkMET'))
+        # pa_aerobic = float(result.get('pa_aerobic'))
 
         # preprocess for physical activity
-        pa_vigMET = round(8 * pa_vig_tm, 2)
-        pa_modMET = round(4 * pa_mod_tm, 2)
-        pa_totMET = round(pa_walkMET * 3.3 + pa_modMET + pa_vigMET, 2)
+        # pa_vigMET = round(8 * pa_vig_tm, 2)
+        # pa_modMET = round(4 * pa_mod_tm, 2)
+        # pa_totMET = round(pa_walkMET * 3.3 + pa_modMET + pa_vigMET, 2)
 
         # get history disease
         # DI3_dg = float(result.get('DI3_dg'))
         # DI4_dg = float(result.get('DI4_dg'))
         HE_DMfh = float(result.get('HE_DMfh'))
-        DE1_3 = float(result.get('DE1_3'))
+        #DE1_3 = float(result.get('DE1_3'))
         # DI1_2 = float(result.get('DI1_2'))
         # DI2_2 = float(result.get('DI2_2'))
         DE1_31 = result.get('DE1_31')
@@ -866,10 +938,10 @@ def dr_simulation_user():
 
             if bloodtest == 1:
                 t = pd.DataFrame(np.array(
-                    [pa_totMET, HE_wc, HE_BMI, HE_sbp, HE_dbp, HE_HbA1c, HE_BUN, HE_crea,
+                    [HE_wc, HE_BMI, HE_sbp, HE_dbp, HE_HbA1c, HE_BUN, HE_crea,
                      HE_HDL_st2, HE_TG, age, HE_DMfh, HE_obe, HE_HP, HE_HCHOL,
-                     HE_HTG, sm_presnt, sex]).reshape(-1, 18),
-                                 columns=['pa_totMET', 'HE_wc', 'HE_BMI', 'HE_sbp',
+                     HE_HTG, sm_presnt, sex]).reshape(-1, 17),
+                                 columns=['HE_wc', 'HE_BMI', 'HE_sbp',
                                           'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea', 'HE_HDL_st2',
                                           'HE_TG', 'age', 'HE_DMfh', 'HE_obe',
                                           'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
@@ -884,9 +956,9 @@ def dr_simulation_user():
             else:
                 # generate risk score if HE_glu being in the 25 th percentile to 50 th percentile
                 t_50 = pd.DataFrame(np.array(
-                    [pa_totMET, HE_wc, HE_BMI, 118.98240115718419, 75.55882352941177,
+                    [HE_wc, HE_BMI, 118.98240115718419, 75.55882352941177,
                      5.534691417550627, 15.428881388621022, 0.8001157184185149, 51.822621449955356, 121.89223722275796,
-                     age, HE_DMfh, HE_obe, 1, 0, 0, sm_presnt, sex]).reshape(-1, 18), columns=['pa_totMET','HE_wc', 'HE_BMI', 'HE_sbp',
+                     age, HE_DMfh, HE_obe, 1, 0, 0, sm_presnt, sex]).reshape(-1, 17), columns=['HE_wc', 'HE_BMI', 'HE_sbp',
                                                                         'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea', 'HE_HDL_st2',
                                                                         'HE_TG', 'age', 'HE_DMfh', 'HE_obe',
                                                                         'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
@@ -910,10 +982,10 @@ def dr_simulation_user():
                 #                                                    'HE_obe',
                 #                                                    'HE_HP', 'HE_HCHOL', 'HE_HTG', 'sm_presnt', 'sex'])
                 t_75 = pd.DataFrame(np.array(
-                    [pa_totMET, HE_wc, HE_BMI, 124.16230366492147, 77.2324607329843,
+                    [HE_wc, HE_BMI, 124.16230366492147, 77.2324607329843,
                      5.739895287958115, 16.05759162303665, 0.8326178010471204, 49.74235817995025, 142.69476439790577,
                      age, HE_DMfh, HE_obe, 3, 0,
-                     0, sm_presnt, sex]).reshape(-1, 18), columns=['pa_totMET', 'HE_wc', 'HE_BMI', 'HE_sbp',
+                     0, sm_presnt, sex]).reshape(-1, 17), columns=['HE_wc', 'HE_BMI', 'HE_sbp',
                                                                    'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea',
                                                                    'HE_HDL_st2',
                                                                    'HE_TG', 'age', 'HE_DMfh',
@@ -928,10 +1000,10 @@ def dr_simulation_user():
 
                 # generate risk score if HE_glu being in the 75 th percentile to 100th percentile
                 t_100 = pd.DataFrame(np.array(
-                    [pa_totMET, HE_wc, HE_BMI, 126.92238648363252, 77.0063357972545,
+                    [HE_wc, HE_BMI, 126.92238648363252, 77.0063357972545,
                      6.763727560718057, 16.50897571277719, 0.8618532206969378, 46.931693880777516, 172.6441393875396,
                      age, HE_DMfh, HE_obe, 3, 0,
-                     0, sm_presnt, sex]).reshape(-1, 18), columns=['pa_totMET', 'HE_wc', 'HE_BMI', 'HE_sbp',
+                     0, sm_presnt, sex]).reshape(-1, 17), columns=['HE_wc', 'HE_BMI', 'HE_sbp',
                                                                    'HE_dbp', 'HE_HbA1c','HE_BUN', 'HE_crea',
                                                                    'HE_HDL_st2',
                                                                    'HE_TG', 'age', 'HE_DMfh',
@@ -958,14 +1030,11 @@ def dr_simulation_user():
                                 "predicted_class_glucose_100": predicted_class_glucose_100,
                                 "sex": sex, "age": age, "HE_ht": HE_ht, "HE_wt": HE_wt, "HE_wc": HE_wc,
                                 "HE_BMI": HE_BMI, "HE_obe": HE_obe,
-                                "bloodtest": bloodtest, "HE_sbp": HE_sbp, "HE_dbp": HE_dbp, "HE_chol": HE_chol,
+                                "HE_sbp": HE_sbp, "HE_dbp": HE_dbp, "HE_chol": HE_chol,
                                 "HE_HDL_st2": HE_HDL_st2, "HE_TG": HE_TG,
                                 "HE_glu": HE_glu, "HE_HbA1c": HE_HbA1c, "HE_BUN": HE_BUN, "HE_crea": HE_crea,
-                                "dr_month": dr_month, "dr_high": dr_high, "sm_presnt": sm_presnt,
-                                "pa_vig_tm": pa_vig_tm,
-                                "pa_mod_tm": pa_mod_tm, "pa_walkMET": pa_walkMET, "pa_aerobic": pa_aerobic,
-                                "pa_vigMET": pa_vigMET, "pa_modMET": pa_modMET, "pa_totMET": pa_totMET,
-                                "HE_DMfh": HE_DMfh, "DE1_3": DE1_3, "DE1_31": DE1_31, "DE1_32": DE1_32, "HE_HP": HE_HP,
+                                "sm_presnt": sm_presnt,
+                                "HE_DMfh": HE_DMfh, "DE1_31": DE1_31, "DE1_32": DE1_32, "HE_HP": HE_HP,
                                 "HE_HCHOL": HE_HCHOL, "HE_HTG": HE_HTG}
             
             # Insert user data into the database
@@ -973,25 +1042,23 @@ def dr_simulation_user():
                 
             # Define the SQL INSERT statement
             insert_query = """
-            INSERT INTO past_reports (
+            INSERT INTO past_report (
                 email, sex, age, diagnosis_time, diagnosed_class, HE_ht, HE_wt, HE_wc,
-                HE_BMI, HE_obe, bloodtest, HE_sbp, HE_dbp, HE_chol, HE_HDL_st2, HE_TG, HE_glu,
-                HE_HbA1c, HE_BUN, HE_crea, dr_month, dr_high, sm_presnt, pa_vig_tm, pa_mod_tm,
-                pa_walkMET, pa_aerobic, pa_vigMET, pa_modMET, pa_totMET, HE_DMfh, DE1_3, DE1_31,
+                HE_BMI, HE_obe,  HE_sbp, HE_dbp, HE_chol, HE_HDL_st2, HE_TG, HE_glu,
+                HE_HbA1c, HE_BUN, HE_crea, sm_presnt, HE_DMfh, DE1_31,
                 DE1_32, HE_HP, HE_HCHOL, HE_HTG, risk_score, risk_score_glucose_50,
                 predicted_class_glucose_50, risk_score_glucose_75, predicted_class_glucose_75,
                 risk_score_glucose_100, predicted_class_glucose_100
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s
             )
             """
             # Execute the INSERT statement with the data
             cursor.execute(insert_query, (
                 "borghare.sb@gmail.com", sex, age, diagnosis_time, predicted_class, HE_ht, HE_wt, HE_wc, HE_BMI, HE_obe, 
-                bloodtest, HE_sbp, HE_dbp, HE_chol, HE_HDL_st2, HE_TG, HE_glu, HE_HbA1c, 
-                HE_BUN, HE_crea, dr_month, dr_high, sm_presnt, pa_vig_tm, pa_mod_tm, pa_walkMET, 
-                pa_aerobic, pa_vigMET, pa_modMET, pa_totMET, HE_DMfh, DE1_3, DE1_31, DE1_32, HE_HP, 
+                HE_sbp, HE_dbp, HE_chol, HE_HDL_st2, HE_TG, HE_glu, HE_HbA1c, 
+                HE_BUN, HE_crea, sm_presnt, HE_DMfh, DE1_31, DE1_32, HE_HP, 
                 HE_HCHOL, HE_HTG, rounded_risk_score, risk_score_glucose_50, predicted_class_glucose_50, 
                 risk_score_glucose_75, predicted_class_glucose_75, risk_score_glucose_100, 
                 predicted_class_glucose_100
@@ -1012,21 +1079,21 @@ def report_page():
     #based on new aws rds database
     cursor = db.cursor()
     # Execute an SQL query to fetch the user with the provided username and password
-    cursor.execute("SELECT users.*, past_reports.* FROM users JOIN past_reports ON users.email = past_reports.email WHERE users.email = 'borghare.sb@gmail.com' ORDER BY past_reports.diagnosis_time DESC LIMIT 2;")
-    #past_reports_ref = db.collection("users").document(person["uid"]).collection("past_reports")
-    #query = past_reports_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING)
-    #past_reports = query.stream()
-    past_reports = cursor.fetchall()
+    cursor.execute("SELECT users.*, past_report.* FROM users JOIN past_report ON users.email = past_report.email WHERE users.email = 'borghare.sb@gmail.com' ORDER BY past_report.diagnosis_time DESC LIMIT 2;")
+    #past_report_ref = db.collection("users").document(person["uid"]).collection("past_report")
+    #query = past_report_ref.order_by("diagnosis_time", direction=firestore.Query.DESCENDING)
+    #past_report = query.stream()
+    past_report = cursor.fetchall()
     #report_list = []
-    report_list = past_reports
-    # for report in past_reports:
+    report_list = past_report
+    # for report in past_report:
     #     report_list.append(report.to_dict())
     #     #print(f'{report.id} => {report.to_dict()}')
     # #print(report_list)
     for report in report_list:
         report['diagnosis_time'] = (report['diagnosis_time'] + timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
         print(report['diagnosis_time'])
-    return render_template('report.html', past_reports = report_list)
+    return render_template('report.html', past_report = report_list)
     #return render_template('report.html')
     
 
@@ -1044,12 +1111,12 @@ def report_detail_page():
         #based on new aws rds database
         cursor = db.cursor()
         # Execute an SQL query to fetch the user with the provided username and password
-        cursor.execute("SELECT users.*, past_reports.* FROM users JOIN past_reports ON users.email = past_reports.email WHERE users.email = 'borghare.sb@gmail.com' ORDER BY past_reports.diagnosis_time DESC;")
+        cursor.execute("SELECT users.*, past_report.* FROM users JOIN past_report ON users.email = past_report.email WHERE users.email = 'borghare.sb@gmail.com' ORDER BY past_report.diagnosis_time DESC;")
         
-        #past_reports = db.collection("users").document(person["uid"]).collection("past_reports").stream()
-        past_reports = cursor.fetchall()
+        #past_report = db.collection("users").document(person["uid"]).collection("past_report").stream()
+        past_report = cursor.fetchall()
         report = {}
-        for doc in past_reports:
+        for doc in past_report:
             to_str = doc.get("diagnosis_time").strftime("%Y-%m-%d %H:%M:%S")
             #to_date = datetime.datetime.strptime(to_str, '%Y-%m-%d %H:%M:%S')
             to_date = datetime.strptime(to_str, '%Y-%m-%d %H:%M:%S')
@@ -1058,6 +1125,7 @@ def report_detail_page():
                 #report = doc.to_dict()
                 report = doc
         #print(report)
+        report['bloodtest'] = 1
         if report['bloodtest'] == 1:
             #print(report['bloodtest'])
             #print(report['advice_list'][1], report['advice_link_list'][1])

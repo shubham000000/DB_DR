@@ -34,9 +34,9 @@
                     <div>
                         <canvas id="barChart3" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
                     </div>
-                    <div>
+                    <!-- <div>
                         <canvas id="barChart4" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
-                    </div>
+                    </div> -->
                     <!-- <div>
                         <canvas id="barChart5" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
                     </div> -->
@@ -198,53 +198,31 @@
                 }]
             };
 
-            latest_HP = Number('{{simulated_report.HE_HP}}')
-            second_HP = Number('{{latest_report.HE_HP}}')
-            HP_data = [second_HP, latest_HP]
-            for (var i = 0; i < HP_data.length; i++ )  {
-                HP_data[i] = replaceWithNull(HP_data[i])
-            }
-            console.log(HP_data)
-            const data4 = {
-                labels: date_labels,
-                datasets: [{
-                    label: "Hypertension Status* (by test)",
-                    data: HP_data,
-                    borderWidth: 2,
-                    barPercentage: 0.6,
-                    barThickness: 23,
-                    backgroundColor: ["rgb(254, 233, 220)","rgb(250, 180, 139)"],
-                    datalabels: {
-                        color: "black",
-                        anchor: 'center',
-                    }
-                }]
-            };
 
-            latest_fat = Number('{{simulated_report.N_FAT}}')
-            second_fat = Number('{{latest_report.N_FAT}}')
-            fat_data = [second_fat, latest_fat]
-            for (var i = 0; i < fat_data.length; i++ )  {
-                fat_data[i] = replaceWithNull(fat_data[i])
-            }
-            console.log(fat_data)
-            const data5 = {
-                labels: date_labels,
-                datasets: [{
-                    label: "Daily Intake of Fat (g)",
-                    data: fat_data,
-                    borderWidth: 2,
-                    barPercentage: 0.6,
-                    barThickness: 23,
-                    backgroundColor: ["rgb(254, 233, 220)","rgb(250, 180, 139)"],
-                    datalabels: {
-                        color: "black",
-                        anchor: 'end',
-                        align: 'end',
-                        offset: 1
-                    }
-                }]
-            };
+            // latest_HP = Number('{{simulated_report.HE_sbp}}')
+            // second_HP = Number('{{latest_report.HE_sbp}}')
+            // HP_data = [second_HP, latest_HP]
+            // for (var i = 0; i < HP_data.length; i++ )  {
+            //     HP_data[i] = replaceWithNull(HP_data[i])
+            // }
+            // console.log(HP_data)
+            // const data4 = {
+            //     labels: date_labels,
+            //     datasets: [{
+            //         label: "Systolic blood pressure*",
+            //         data: HP_data,
+            //         borderWidth: 2,
+            //         barPercentage: 0.6,
+            //         barThickness: 23,
+            //         backgroundColor: ["rgb(254, 233, 220)","rgb(250, 180, 139)"],
+            //         datalabels: {
+            //             color: "black",
+            //             anchor: 'center',
+            //         }
+            //     }]
+            // };
+
+            
 
             const canvasBackgroundColor = {
                 id: 'canvasBackgroundColor',
@@ -595,10 +573,10 @@
                 config3
             );
 
-            const barChart4 = new Chart(
-                document.getElementById('barChart4'),
-                config4
-            );
+            // const barChart4 = new Chart(
+            //     document.getElementById('barChart4'),
+            //     config4
+            // );
 
             /*const barChart5 = new Chart(
                 document.getElementById('barChart5'),

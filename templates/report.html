@@ -9,11 +9,11 @@
     <div class="card mb-3" style="max-width: 60%; max-height: 500px; margin: auto;">
       <img src="/static/PIC/report.png" class="card-img-top" alt="..."
           style="width: 300px; height: 182px; margin: auto;">
-          <h1> Past Reports </h1>
+          <h1> Reports </h1>
     </div>
     
     <div class="accordion" id="accordionExample">
-      {% for report in past_reports %}
+      {% for report in past_report %}
         <div class="card">
           <form action={{ url_for('report_detail_page') }} method="POST">
           <div class="card-header" id="heading{{i}}">
@@ -67,8 +67,7 @@
                   <li class="list-item">{{ report.HE_TG }}</li>
                   <li class="list-item">{{ report.HE_glu }}</li>
                   <li class="list-item">{{ report.HE_HbA1c }}</li>
-                  <li class="list-item">{{ report.HE_BUN }}</li>
-                  <li class="list-item">{{ report.HE_crea }}</li>
+             
                 </ul>
               </div>
               <!--Lifestyle Section-->
@@ -85,13 +84,11 @@
                 
                 </ul>
                 <ul class="list-value">
-                  <li class="list-item">{{ report.dr_month }}</li>
-                  <li class="list-item">{{ report.dr_high }}</li>
-                  <li class="list-item">{{ report.sm_presnt }}</li>
+     
+                  <li class="list-item">{{ report.sm_presnt_3c }}</li>
                   <li class="list-item">{{ report.pa_vig_tm }}</li>
                   <li class="list-item">{{ report.pa_mod_tm }}</li>
-                  <li class="list-item">{{ report.pa_walk }}</li>
-                  <li class="list-item">{{ report.pa_aerobic }}</li>
+               
                 
                 </ul>
               </div>
@@ -107,7 +104,7 @@
                   
                 </ul>
                 <ul class="list-value">
-                  <li class="list-item">{{ report.DE1_3 }}</li>
+                 
                   <li class="list-item">{{ report.DE1_31 }}</li>
                   <li class="list-item">{{ report.DE1_32 }}</li>
                   <li class="list-item">{{ report.HE_DMfh }}</li>
