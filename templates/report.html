@@ -15,7 +15,7 @@
     <div class="accordion" id="accordionExample">
       {% for report in past_report %}
         <div class="card">
-          <form action={{ url_for('report_detail_page') }} method="POST">
+           <form action={{ url_for('report_detail_page') }} method="POST">
           <div class="card-header" id="heading{{i}}">
             <h2 class="mb-0"> 
               <button class="btn btn-link btn-block text-left" data-toggle="collapse" data-target="#{{i}}" aria-expanded="true" aria-controls="{{i}}" style="color: #ee6617">
@@ -55,9 +55,8 @@
                   <li class="list-item">HDL Cholesterol (mg/dL):</li>
                   <li class="list-item">Triglycerides (mg/dL):</li>
                   <li class="list-item">Fasting Blood Sugar (mg/dl):</li>
-                  <li class="list-item">Hemoglobin_A1c (%):</li>
-                  <li class="list-item">Blood Urea Nitrogen (mg/dL):</li>
-                  <li class="list-item">Blood Serum Creatinine (mg/dL):</li>
+                  <li class="list-item">Hemoglobin A1c (%):</li>
+                  <li class="list-item">eGFR (mL/min/1.73m2):</li>
                 </ul>
                 <ul class="list-value">
                   <li class="list-item">{{ report.HE_sbp }}</li>
@@ -65,8 +64,9 @@
                   <li class="list-item">{{ report.HE_chol }}</li>
                   <li class="list-item">{{ report.HE_HDL_st2 }}</li>
                   <li class="list-item">{{ report.HE_TG }}</li>
-                  <li class="list-item">{{ report.HE_glu }}</li>
+		  <li class="list-item">{{ report.HE_glu }}</li>
                   <li class="list-item">{{ report.HE_HbA1c }}</li>
+		  <li class="list-item">{{ report.eGFR }}</li>
              
                 </ul>
               </div>
@@ -74,21 +74,14 @@
               <p class="Subheader">Lifestyle Records</p>
               <div class="report-detail" style="display: flex; align-items: center; justify-content: center;">
                 <ul class="list-name">
-                  <li class="list-item">Do you drink more than once a month?</li>
-                  <li class="list-item">Do you have high risk drinking?</li>
+                  
                   <li class="list-item">Do you smoke now?</li>               
-                  <li class="list-item">Duration of Vigorous Activity During a Week (min):</li>
-                  <li class="list-item">Duration of Moderate Activity During a Week (min):</li>
-                  <li class="list-item">Duration of Walking During a Week (min):</li>
-                  <li class="list-item">Do you do aerobic activity?</li>
-                
+                  
                 </ul>
                 <ul class="list-value">
      
                   <li class="list-item">{{ report.sm_presnt_3c }}</li>
-                  <li class="list-item">{{ report.pa_vig_tm }}</li>
-                  <li class="list-item">{{ report.pa_mod_tm }}</li>
-               
+                  
                 
                 </ul>
               </div>
@@ -96,10 +89,11 @@
               <p class="Subheader">Historical Diseases</p>
               <div class="report-detail" style="display: flex; align-items: center; justify-content: center;">
                 <ul class="list-name">
-                  <li class="list-item">Do you have diabetes treatment?</li>
+			<!--<li class="list-item">Do you have diabetes treatment?</li>-->
                   <li class="list-item">Diabetes Treatment with Insulin Injection:</li>
                   <li class="list-item">Diabetes Treatment with Oral Medication:</li>
                   <li class="list-item">Do you have diabetes family history?</li>
+		   <li class="list-item">Diabetes Duration?</li>
                 
                   
                 </ul>
@@ -108,15 +102,15 @@
                   <li class="list-item">{{ report.DE1_31 }}</li>
                   <li class="list-item">{{ report.DE1_32 }}</li>
                   <li class="list-item">{{ report.HE_DMfh }}</li>
+		  <li class="list-item">{{ report.DE1_dur }}</li>
                
                   
                 </ul>
               </div>
               <input type="text" class="form-control" id="inputReportTime" name="report_time" value="{{ report.diagnosis_time }}" style="display: none;" required >
               <div class="view-Report">
-                <button type="submit" class="btn btn-warning" role="button" style="margin-bottom: 10px" >View full report</button>
-                <!--<a class="btn btn-outline-warning" type="button" href="{{ url_for('report_detail_page') }}" style=" margin-bottom: 10px;">View full report</a>-->
-              </div>
+               <button type="submit" class="btn btn-warning" role="button" style="margin-bottom: 10px" >View full report</button>
+                <!--<a class="btn btn-outline-warning" type="button" href="{{ url_for('report_detail_page') }}" style=" margin-bottom: 10px;">View full report</a>-->              </div>
               </div>
           </div>
           </form>  

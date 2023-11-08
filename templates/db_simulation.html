@@ -19,8 +19,8 @@
         </p>
         <p style="margin: auto; width: 850px; font-size: 12px;">*The form is <b>auto-filled</b> with your most recent record. You can try simulations by inputting new values.
         </p>
-        <p style="margin: auto; width: 850px; font-size: 12px; margin-bottom: 10px;">*Certain factors would have <b>stronger impacts </b>on the risk score simulated, such as <b>Hemoglobin_A1c (%),
-            Diabetes Family History, Waist Circumference (cm). </b>.
+        <p style="margin: auto; width: 850px; font-size: 12px; margin-bottom: 10px;">*Certain factors would have <b>stronger impacts </b>on the risk score simulated, such as <b>Hemoglobin A1c (%),
+            Diabetes Family History. </b>
         </p>
     </div>
         <ul class="nav nav-tabs" id="myTab" role="tablist" style=
@@ -43,7 +43,7 @@
     </ul>
 
     <div class="tab-content" id="myTabContent">
-    <form action="{{ url_for('db_simulation_user') }}" method="POST" style="margin-bottom: 20px;">
+    <form action={{ url_for('db_simulation_user') }} method="POST" style="margin-bottom: 20px;">
          <div class="tab-pane fade show active" id="basicinfo" role="tabpanel" aria-labelledby="basicinfo-tab" style=
                 "max-width: 1000px;
                 border-radius: 20px;
@@ -79,11 +79,11 @@
             </div>
             <div class="form-group row">
                 <label for="inputPassword3" class="col-sm-5 col-form-label">Height (cm)*
-                    <i style="font-size: 13px;">(Allowed range: 0.1~300)</i>
+                    <i style="font-size: 13px;">(Allowed range: 0~300)</i>
                     <span id="HE_htDiff" style="color: #ee6617; margin-left: 20px;"></span>
                 </label>
                 <div class="col-sm-10" style="max-width: 500px;">
-                    <input type="number" class="form-control" id="inputHE_ht" name="HE_ht" required value="{{ latest_report.HE_ht }}" step=".01" onkeyup="HE_htDiff()" min="0.1" max="300">
+                    <input type="number" class="form-control" id="inputHE_ht" name="HE_ht" required value="{{ latest_report.HE_ht }}" step=".01" onkeyup="HE_htDiff()" min="0" max="300">
                 </div>
             </div>
             <div class="form-group row">
@@ -193,7 +193,7 @@
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label for="inputPassword3" class="col-sm-5 col-form-label" style="width: 500px;">Hemoglobin_A1c (%)
+                    <label for="inputPassword3" class="col-sm-5 col-form-label" style="width: 500px;">Hemoglobin A1c (%)
                         <i style="font-size: 13px;">(Allowed range: 0~20)</i>
                         <span id="HE_HbA1cDiff" style="color: #ee6617; margin-left: 20px;"></span>
                     </label>
@@ -212,7 +212,7 @@
                         <input type="number" class="form-control" id="inputHE_crea" name="eGFR" value ="{{ latest_report.eGFR }}" onkeyup="" min="0" max="120">
                     </div>
                 </div>
-                <div class="form-group row">
+                <!-- <div class="form-group row">
                     <label for="inputPassword3" class="col-sm-5 col-form-label" style="width: 500px;">Cystatin C (μg/dL)
                         <i style="font-size: 13px;">(Allowed range: 0~1000)</i>
                         <span id="HE_creaDiff" style="color: #ee6617; margin-left: 20px;"></span>
@@ -220,7 +220,7 @@
                     <div class="col-sm-10" style="max-width: 500px;">
                         <input type="number" class="form-control" id="inputHE_crea" name="cystatin" value ="" step=".01" onkeyup="" min="0" max="1000">
                     </div>
-                </div>
+                </div> -->
             </div>
             <div style="display: flex;
                           justify-content: center;
@@ -271,16 +271,16 @@
             <div class="form-group row">
                 <label for="inputEmail3" class="col-sm-5 col-form-label">Do you smoke?*</label>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="sm_presnt_3c" id="sm_presnt1" value="1" required>
+                    <input class="form-check-input" type="radio" name="sm_presnt_3c" id="sm_presnt1" value="0" required>
                     <label class="form-check-label" for="sm_presnt1">Non smoker</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="sm_presnt_3c" id="sm_presnt2" value="0" required>
+                    <input class="form-check-input" type="radio" name="sm_presnt_3c" id="sm_presnt2" value="1" required>
                     <label class="form-check-label" for="sm_presnt2">Former smoker</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="sm_presnt_3c" id="sm_presnt2" value="0" required>
-                    <label class="form-check-label" for="sm_presnt2">Current smoker</label>
+                    <input class="form-check-input" type="radio" name="sm_presnt_3c" id="sm_presnt3" value="2" required>
+                    <label class="form-check-label" for="sm_presnt3">Current smoker</label>
                 </div>
             </div>
 
@@ -355,7 +355,7 @@
                     <span id="HE_creaDiff" style="color: #ee6617; margin-left: 20px;"></span>
                 </label>
                 <div class="col-sm-10" style="max-width: 500px;">
-                    <input type="number" class="form-control" id="diab_dur_year" name="DE1_ag" value ="{{ latest_report.DE1_ag }}" step="" onkeyup="" min="0" max="2100">
+                    <input type="number" class="form-control" id="diab_dur_year" name="DE1_ag" step="" onkeyup="" min="0" max="2100">
                 </div>
             </div>
 
@@ -558,9 +558,9 @@
             box-sizing: border-box;
         }
 
-        input:invalid {
+        /*input:invalid {
             box-shadow: 0 0 5px 1px red;
-        }
+        }*/
 
         input:focus:invalid {
             box-shadow: none;

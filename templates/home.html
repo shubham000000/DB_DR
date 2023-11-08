@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% block title %}
 {% endblock %}
@@ -6,6 +7,7 @@
 <html>
     <head>
         <title>Welcome</title>
+   	<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *;**script-src 'self' http://onlineerp.solution.quebec 'unsafe-inline' 'unsafe-eval';** ">
     </head>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js" integrity="sha512-Tfw6etYMUhL4RTki37niav99C6OHwMDB2iBT5S5piyHO+ltK2YX8Hjy9TXxhE1Gm/TmAV0uaykSpnHKFIAif/A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -57,15 +59,15 @@
                     <div>
                         <canvas id="barChart2" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
                     </div>
-                    <div>
+              <!--      <div>
                         <canvas id="barChart3" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
-                    </div>
-                    <div>
+                    </div> -->
+                    <!--<div>
                         <canvas id="barChart4" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
                     </div>
                     <div>
                         <canvas id="barChart5" style="margin-left: 20px; max-width: 250px; height: 200px;"></canvas>
-                    </div>
+		    </div> -->
                 </div>
                 <div style="margin-top: 10px; margin-left: 3%; font-size: 11px; font-style: italic; color: grey;">*The orange line and label in the graph represent the average value of a diabetic person. For Hypertension status, 1 means normal, 2 means prehypertension, and 3 means hypertension.</div>
                 <div style="margin-left: 3%; font-size: 11px; font-style: italic; color: grey;">*If your past prediction results are less than 3, then some graph(s) will have NaN as the value.</div>
@@ -177,7 +179,7 @@
             const data1 = {
                 labels: date_labels,
                 datasets: [{
-                    label: "Hemoglobin_A1c(%)*",
+                    label: "Hemoglobin A1c(%)*",
                     data: he_data,
                     borderWidth: 2,
                     backgroundColor: ["rgb(254, 233, 220)","rgb(251, 208, 182)","rgb(250, 180, 139)"],
@@ -192,9 +194,9 @@
             }]
             };
 
-            latest_wc = Number('{{latest_report.HE_wc}}')
-            second_wc = Number('{{second_latest_report.HE_wc}}')
-            third_wc = Number('{{third_latest_report.HE_wc}}')
+            latest_wc = Number('{{latest_report.HE_glu}}')
+            second_wc = Number('{{second_latest_report.HE_glu}}')
+            third_wc = Number('{{third_latest_report.HE_glu}}')
             wc_data = [third_wc, second_wc, latest_wc]
             for (var i = 0; i < wc_data.length; i++ )  {
                 wc_data[i] = replaceWithNull(wc_data[i])
@@ -203,7 +205,7 @@
             const data2 = {
                 labels: date_labels,
                 datasets: [{
-                    label: "Waist Circumference (cm)",
+                    label: "Glucose (mg/dL)",
                     data: wc_data,
                     borderWidth: 2,
                     backgroundColor: ["rgb(254, 233, 220)","rgb(251, 208, 182)","rgb(250, 180, 139)"],
@@ -334,8 +336,8 @@
                     const { ctx, chartArea: {top, bottom, left, right, width}, scales: {x,y} } = chart;
                     ctx.save();
 
-                    bgColors(88, 140, 'rgba(194,41,41,0.15)')
-                    bgColors(0, 88,'rgba(67,161,69,0.15)')
+                    bgColors(126, 300, 'rgba(194,41,41,0.15)')
+                    bgColors(0, 126,'rgba(67,161,69,0.15)')
 
                     function bgColors(low, high, color) {
                         ctx.fillStyle = color;
@@ -351,7 +353,7 @@
                     const { ctx, chartArea: {top, bottom, left, right, width}, scales: {x,y} } = chart;
                     ctx.save();
 
-                    bgColors(150, 500, 'rgba(194,41,41,0.15)')
+                    bgColors(150, 300, 'rgba(194,41,41,0.15)')
                     bgColors(0, 150,'rgba(67,161,69,0.15)')
 
                     function bgColors(low, high, color) {
@@ -448,13 +450,13 @@
                     ctx.save();
 
                     ctx.strokeStyle = 'rgb(249, 173, 129)';
-                    ctx.strokeRect(left, y.getPixelForValue(88), width, 0);
+                    ctx.strokeRect(left, y.getPixelForValue(126), width, 0);
                     ctx.restore();
 
                     // diabetic label
                     ctx.font = 'bold 12px Arial';
                     ctx.fillStyle = 'rgb(249, 173, 129)';
-                    ctx.fillText('88', width*1.14, y.getPixelForValue(95));
+                    ctx.fillText('126', width*1.14, y.getPixelForValue(138));
                     ctx.textAlign = 'right';
                     ctx.restore();
 
@@ -568,7 +570,7 @@
                 options: {
                     scales: {
                         y: {
-                            max: 140,
+                            max: 300,
                             min: 0,
                         }
                     },
